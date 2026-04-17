@@ -49,7 +49,7 @@ void WriteX::loop() {
       msg_queue.pop();
 
       lock.unlock();
-                
+
       if (file.is_open()) {
         file << s << std::endl;
       }

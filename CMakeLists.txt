@@ -12,7 +12,7 @@ if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 endif()
 
 add_library(${PROJECT_NAME} SHARED
-    logger.cpp
+    writex.cpp
 )
 
 add_executable(main
