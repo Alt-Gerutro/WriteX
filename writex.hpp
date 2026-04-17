@@ -18,9 +18,18 @@ private:
     std::mutex mtx;
     std::ofstream file;
 
+    std::string general_fmt;
+
+    void enq_msg(std::string&);
     void loop();
 public:
-    WriteX(const std::string&);
+    WriteX(const std::string&, const std::string&);
     ~WriteX();
     void log(const std::string&, int);
+
+    template<typename... Args>
+    void logf(Args&&... args) {
+      std::string formatted = std::vformat(general_fmt, std::make_format_args(args...));
+      enq_msg(formatted);
+    }
 };

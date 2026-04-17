@@ -10,7 +10,8 @@
 #include <string>
 #include <sstream>
 
-WriteX::WriteX(const std::string& filepath) : bgthread(&WriteX::loop, this) {
+WriteX::WriteX(const std::string& filepath, const std::string& fmt) : 
+bgthread(&WriteX::loop, this), general_fmt(fmt) {
   file.open(filepath, std::ios_base::out);
 }
 
@@ -31,12 +32,7 @@ void WriteX::log(const std::string& msg, int tid) {
   std::string formatted = oss.str();
   oss.str("");
 
-  {
-    std::lock_guard<std::mutex> lock(mtx);
-    msg_queue.push(std::move(formatted));
-  }
-
-  cv.notify_one();
+  
 }
 
 void WriteX::loop() {
@@ -60,4 +56,14 @@ void WriteX::loop() {
 
     if (stop_flag && msg_queue.empty()) break;
   }
+}
+
+
+void WriteX::enq_msg(std::string& msg) {
+  {
+    std::lock_guard<std::mutex> lock(mtx);
+    msg_queue.push(std::move(msg));
+  }
+
+  cv.notify_one();
 }
