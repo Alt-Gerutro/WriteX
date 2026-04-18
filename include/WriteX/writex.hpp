@@ -93,7 +93,7 @@ public:
    * 
    * @version 0.1.0
    */
-  void setFormat(std::string& format_string);
+  void setFormat(std::string format_string);
 
   /**
    * @brief Get the Format string

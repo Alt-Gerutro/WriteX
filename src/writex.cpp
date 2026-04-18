@@ -1,4 +1,4 @@
-#include "writex.hpp"
+#include <writex.hpp>
 #include <condition_variable>
 #include <fstream>
 #include <ios>
@@ -43,7 +43,7 @@ WriteX::~WriteX() {
   if (log_file.is_open()) log_file.close();
 }
 
-void WriteX::setFormat(std::string& format_string) {
+void WriteX::setFormat(std::string format_string) {
   std::lock_guard<std::mutex> lock(mtx);
   fmt = format_string;
 }
@@ -56,8 +56,9 @@ std::string WriteX::getFormat() {
 std::string WriteX::format(WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line) {
   std::string res;
   for (size_t i = 0; i < fmt.size(); ++i) {
-    if (fmt[i] == '%' && i+1 < fmt.size()) {
-      switch (fmt[++i]) {
+    if (fmt[i] == '%' && i+1 < fmt.size() - 1) {
+      char c = fmt[i+1];
+      switch (c) {
         case 'N': res += logger_name; break;
         case 'L': res += levelToString(lvl); break;
         case 'M': res += msg; break;
@@ -65,8 +66,14 @@ std::string WriteX::format(WriteX_Level lvl, const std::string& msg, const char*
         case 'F': res += file; break;
         case 'f': res += func; break;
         case 'l': res += std::to_string(line); break;
-        default: res += '%'; res += msg[++i]; 
+        case '%': res += '%'; break;
+        default: {
+          res += '%';
+          res += c;
+          break;
+        }
       }
+      ++i;
     } else {
       res += fmt[i];
     }
