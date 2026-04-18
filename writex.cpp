@@ -8,11 +8,11 @@
 #include <queue>
 #include <thread>
 #include <string>
-#include <sstream>
 
-WriteX::WriteX(const std::string& filepath, const std::string& fmt) : 
-bgthread(&WriteX::loop, this), general_fmt(fmt) {
-  file.open(filepath, std::ios_base::out);
+WriteX::WriteX(const std::string& name, const std::string& filepath) : 
+bgthread(&WriteX::loop, this), logger_name(name) {
+  log_file.open(filepath, std::ios_base::out);
+  fmt = "[%N] [%F %l] [%L] %M";
 }
 
 WriteX::~WriteX() {
@@ -23,16 +23,44 @@ WriteX::~WriteX() {
   cv.notify_all();
 
   if (bgthread.joinable()) bgthread.join();
-  if (file.is_open()) file.close();
+  if (log_file.is_open()) log_file.close();
 }
 
-void WriteX::log(const std::string& msg, int tid) {
-  std::ostringstream oss;
-  oss << "[Thread " << tid << "] " << msg;
-  std::string formatted = oss.str();
-  oss.str("");
+void WriteX::setFormat(std::string& fstr) {
+  std::lock_guard<std::mutex> lock(mtx);
+  fmt = fstr;
+}
 
-  
+std::string WriteX::format(WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line) {
+  std::string res;
+  for (size_t i = 0; i < fmt.size(); ++i) {
+    if (fmt[i] == '%' && i+1 < fmt.size()) {
+      switch (fmt[++i]) {
+        case 'N': res += logger_name; break;
+        case 'L': res += levelToString(lvl); break;
+        case 'M': res += msg; break;
+
+        case 'F': res += file; break;
+        case 'f': res += func; break;
+        case 'l': res += std::to_string(line); break;
+        default: res += '%'; res += msg[++i]; 
+      }
+    } else {
+      res += fmt[i];
+    }
+  }
+  return res;
+}
+
+std::string WriteX::levelToString(WriteX_Level& l) {
+  switch (l) {
+    case WriteX_Level::DEBUG: return "DEBUG";
+    case WriteX_Level::INFO: return "INFO";
+    case WriteX_Level::WARNING: return "WARNING";
+    case WriteX_Level::ERROR: return "ERROR";
+    case WriteX_Level::FATAL: return "FATAL";
+    default: return "UNKNOWN";
+  }
 }
 
 void WriteX::loop() {
@@ -46,8 +74,8 @@ void WriteX::loop() {
 
       lock.unlock();
 
-      if (file.is_open()) {
-        file << s << std::endl;
+      if (log_file.is_open()) {
+        log_file << s << std::endl;
       }
       std::cout << s << std::endl;
 

@@ -1,9 +1,17 @@
 #include "writex.hpp"
+#include <thread>
+
+WriteX l("Melon", "file.log");
+
+void func1() {
+  LOG_DEBUG(l, "Hello from func1");
+}
 
 int main(int argc, char** argv) {
-    WriteX l("file.log", "[Thread {}] {}");
+  std::thread tr1 (&func1);
+  LOG_DEBUG(l, "Hello from main");
 
-    l.logf(1, "Hello");
+  tr1.join();
 
-    return 0;
+  return 0;
 }
