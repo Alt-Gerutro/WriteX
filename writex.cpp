@@ -8,11 +8,28 @@
 #include <queue>
 #include <thread>
 #include <string>
+#include <type_traits>
+
+const WriteX_Level operator|(WriteX_Level a, WriteX_Level b) {
+  using T = std::underlying_type_t<WriteX_Level>;
+  return static_cast<WriteX_Level>(static_cast<T>(a) | static_cast<T>(b));
+}
 
 WriteX::WriteX(const std::string& name, const std::string& filepath) : 
 bgthread(&WriteX::loop, this), logger_name(name) {
   log_file.open(filepath, std::ios_base::out);
-  fmt = "[%N] [%F %l] [%L] %M";
+  filter_level = ALL_LEVELS;
+  fmt = "[%N] [%F %f:%l] [%L] %M";
+}
+
+WriteX::WriteX(const std::string& name, const std::string& format, short filter, const std::string& filepath) : 
+bgthread(&WriteX::loop, this), logger_name(name), fmt(format), filter_level(filter) {
+  log_file.open(filepath, std::ios_base::out);
+}
+
+WriteX::WriteX(const std::string& name, short filter, const std::string& filepath) : 
+bgthread(&WriteX::loop, this), logger_name(name), filter_level(filter) {
+  log_file.open(filepath, std::ios_base::out);
 }
 
 WriteX::~WriteX() {
@@ -26,9 +43,14 @@ WriteX::~WriteX() {
   if (log_file.is_open()) log_file.close();
 }
 
-void WriteX::setFormat(std::string& fstr) {
+void WriteX::setFormat(std::string& format_string) {
   std::lock_guard<std::mutex> lock(mtx);
-  fmt = fstr;
+  fmt = format_string;
+}
+
+std::string WriteX::getFormat() {
+  std::lock_guard<std::mutex> lock(mtx);
+  return fmt;
 }
 
 std::string WriteX::format(WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line) {
@@ -50,6 +72,16 @@ std::string WriteX::format(WriteX_Level lvl, const std::string& msg, const char*
     }
   }
   return res;
+}
+
+void WriteX::setFilter(short filter) {
+  std::lock_guard<std::mutex> lock(mtx);
+  filter_level = filter;
+}
+
+short WriteX::getFilretInt() {
+  std::lock_guard<std::mutex> lock(mtx);
+  return filter_level;
 }
 
 std::string WriteX::levelToString(WriteX_Level& l) {
@@ -85,7 +117,6 @@ void WriteX::loop() {
     if (stop_flag && msg_queue.empty()) break;
   }
 }
-
 
 void WriteX::enq_msg(std::string& msg) {
   {

@@ -1,17 +1,17 @@
 #include "writex.hpp"
-#include <thread>
 
 WriteX l("Melon", "file.log");
 
-void func1() {
-  LOG_DEBUG(l, "Hello from func1");
-}
 
 int main(int argc, char** argv) {
-  std::thread tr1 (&func1);
-  LOG_DEBUG(l, "Hello from main");
+  
+  l.setFilter(TO_WARNING_ASC);
 
-  tr1.join();
+  LOG_DEBUG(l, "Debug message");
+  LOG_INFO(l, "Info message");
+  LOG_WARNING(l, "Warning message");
+  LOG_ERROR(l, "Error message");
+  LOG_FATAL(l, "Fatal message");
 
   return 0;
 }
