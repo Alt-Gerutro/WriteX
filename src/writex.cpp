@@ -56,7 +56,7 @@ std::string WriteX::getFormat() {
 std::string WriteX::format(WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line) {
   std::string res;
   for (size_t i = 0; i < fmt.size(); ++i) {
-    if (fmt[i] == '%' && i+1 < fmt.size() - 1) {
+    if (fmt[i] == '%' && i+1 < fmt.size()) {
       char c = fmt[i+1];
       switch (c) {
         case 'N': res += logger_name; break;
