@@ -1,7 +1,5 @@
 #include <writex.hpp>
 #include <condition_variable>
-#include <fstream>
-#include <ios>
 #include <iostream>
 #include <mutex>
 #include <ostream>
@@ -15,22 +13,25 @@ const WriteX_Level operator|(WriteX_Level a, WriteX_Level b) {
   return static_cast<WriteX_Level>(static_cast<T>(a) | static_cast<T>(b));
 }
 
-WriteX::WriteX(const std::string& name, const std::string& filepath) : 
-bgthread(&WriteX::loop, this), logger_name(name) {
-  log_file.open(filepath, std::ios_base::out);
+
+WriteX::WriteX(const std::string& name, std::ostream& _ostream) :
+bgthread(&WriteX::loop, this), logger_name(name), ostream(_ostream) {
   filter_level = ALL_LEVELS;
   fmt = "[%N] [%F %f:%l] [%L] %M";
 }
 
-WriteX::WriteX(const std::string& name, const std::string& format, short filter, const std::string& filepath) : 
-bgthread(&WriteX::loop, this), logger_name(name), fmt(format), filter_level(filter) {
-  log_file.open(filepath, std::ios_base::out);
+WriteX::WriteX(const std::string& name, std::ostream& _ostream, const std::string& format) :
+bgthread(&WriteX::loop, this), logger_name(name), ostream(_ostream), fmt(format) {
+  filter_level = ALL_LEVELS;
 }
 
-WriteX::WriteX(const std::string& name, short filter, const std::string& filepath) : 
-bgthread(&WriteX::loop, this), logger_name(name), filter_level(filter) {
-  log_file.open(filepath, std::ios_base::out);
+WriteX::WriteX(const std::string& name, std::ostream& _ostream, short filter) :
+bgthread(&WriteX::loop, this), logger_name(name), ostream(_ostream), filter_level(filter) {
+  fmt = "[%N] [%F %f:%l] [%L] %M";
 }
+
+WriteX::WriteX(const std::string& name, std::ostream& _ostream, const std::string&format, short filter) :
+bgthread(&WriteX::loop, this), logger_name(name), ostream(_ostream), fmt(format), filter_level(filter) {}
 
 WriteX::~WriteX() {
   {
@@ -40,7 +41,6 @@ WriteX::~WriteX() {
   cv.notify_all();
 
   if (bgthread.joinable()) bgthread.join();
-  if (log_file.is_open()) log_file.close();
 }
 
 void WriteX::setFormat(std::string format_string) {
@@ -54,10 +54,16 @@ std::string WriteX::getFormat() {
 }
 
 std::string WriteX::format(WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line) {
+  std::string cur_fmt;
+  {
+    std::lock_guard<std::mutex> lock(mtx);
+    cur_fmt = fmt;
+  }
+
   std::string res;
-  for (size_t i = 0; i < fmt.size(); ++i) {
-    if (fmt[i] == '%' && i+1 < fmt.size()) {
-      char c = fmt[i+1];
+  for (size_t i = 0; i < cur_fmt.size(); ++i) {
+    if (cur_fmt[i] == '%' && i+1 < cur_fmt.size()) {
+      char c = cur_fmt[i+1];
       switch (c) {
         case 'N': res += logger_name; break;
         case 'L': res += levelToString(lvl); break;
@@ -75,7 +81,7 @@ std::string WriteX::format(WriteX_Level lvl, const std::string& msg, const char*
       }
       ++i;
     } else {
-      res += fmt[i];
+      res += cur_fmt[i];
     }
   }
   return res;
@@ -91,7 +97,7 @@ short WriteX::getFilretInt() {
   return filter_level;
 }
 
-std::string WriteX::levelToString(WriteX_Level& l) {
+std::string WriteX::levelToString(const WriteX_Level& l) const {
   switch (l) {
     case WriteX_Level::DEBUG: return "DEBUG";
     case WriteX_Level::INFO: return "INFO";
@@ -113,13 +119,16 @@ void WriteX::loop() {
 
       lock.unlock();
 
-      if (log_file.is_open()) {
-        log_file << s << std::endl;
+      if (add_newline) {
+        ostream << s << std::endl;
+      } else {
+        ostream << s;
       }
-      std::cout << s << std::endl;
 
       lock.lock();
     }
+
+    cv.notify_all();
 
     if (stop_flag && msg_queue.empty()) break;
   }
@@ -132,4 +141,14 @@ void WriteX::enq_msg(std::string& msg) {
   }
 
   cv.notify_one();
+}
+
+void WriteX::flush() {
+  std::unique_lock<std::mutex> lock(mtx);
+  cv.wait(lock, [this] {return msg_queue.empty();});
+}
+
+void WriteX::switchNewLine() {
+  std::lock_guard<std::mutex> lock_flag(mtx);
+  add_newline = !add_newline;
 }

@@ -2,7 +2,7 @@
 
 #include <condition_variable>
 #include <format>
-#include <fstream>
+#include <mutex>
 #include <queue>
 #include <string>
 #include <thread>
@@ -31,7 +31,7 @@ const WriteX_Level operator|(WriteX_Level a, WriteX_Level b);
 
 /**
  * @brief Class for logging
- * @version 0.0.1
+ * @version 0.2.0
  */
 class WriteX {
 private:
@@ -40,20 +40,61 @@ private:
   bool stop_flag {false};
 
   std::mutex mtx;
-  std::ofstream log_file;
+  std::ostream& ostream;
   std::queue<std::string> msg_queue;
 
   std::string logger_name;
   std::string fmt;
   short filter_level;
 
+  bool add_newline {true};
+
   void enq_msg(std::string&);
   void loop();
 public:
-  WriteX(const std::string& name, const std::string& filepath);
-  WriteX(const std::string& name, const std::string& format, const std::string& filepath);
-  WriteX(const std::string& name, const std::string& format, short filter, const std::string& filepath);
-  WriteX(const std::string& name, short filter, const std::string& filepath);
+  /**
+   * @brief Construct a new WriteX object
+   * 
+   * @param name Name of logger
+   * @param _ostream Stream where to write logs
+   *
+   * @version 0.2.0
+   */
+  explicit WriteX(const std::string& name, std::ostream& _ostream);
+
+  /**
+   * @brief Construct a new WriteX object
+   * 
+   * @param name Name of logger
+   * @param _ostream Stream where to write logs
+   * @param format Format string. See format documentation.
+   *
+   * @version 0.2.0
+   */
+  explicit WriteX(const std::string& name, std::ostream& _ostream, const std::string& format);
+
+  /**
+   * @brief Construct a new WriteX object
+   * 
+   * @param name Name of logger
+   * @param _ostream Stream where to write logs
+   * @param filter Filter integer. See iltering documentation
+   *
+   * @version 0.2.0
+   */
+  explicit WriteX(const std::string& name, std::ostream& _ostream, short filter);
+
+  /**
+   * @brief Construct a new WriteX object
+   * 
+   * @param name Name of logger
+   * @param _ostream Stream where to write logs
+   * @param format Format string. See format documentation
+   * @param filter Filter integer. See iltering documentation
+   *
+   * @version 0.2.0
+   */
+  explicit WriteX(const std::string& name, std::ostream& _ostream, const std::string& format, short filter);
   ~WriteX();
 
   /**
@@ -64,15 +105,24 @@ public:
    *
    * @version 0.1.0
    */
-  std::string levelToString(WriteX_Level& level);
+  std::string levelToString(const WriteX_Level& level) const;
+
+  /**
+   * @brief Switching new line flag
+   * 
+   * @note true -> false, false -> true.
+   * @note By default: true
+   * @version 0.2.0
+   */
+  void switchNewLine();
 
   /**
    * @brief Set the Filter of logs
    * 
    * @param filter Integer for filter
    *
-   * @note see how works filter integer in README.md
-   *
+   * @note See how to works filter integer in README.md
+   * 
    * @version 0.1.2
    */
   void setFilter(short filter);
@@ -148,11 +198,23 @@ public:
    */
   template<typename ...Args>
   void log(const WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line, Args... args) {
-    if (static_cast<short>(lvl) & filter_level) {
+    short cur_filter;
+    {
+      std::lock_guard<std::mutex> lock(mtx);
+      cur_filter = filter_level;
+    }
+    if (static_cast<short>(lvl) & cur_filter) {
       std::string str = format(lvl, format_msg(msg, args...), file, func, line);
       enq_msg(str);
     }
   }
+
+  /**
+   * @brief Wait for log output
+   * 
+   * @version 0.2.0
+   */
+  void flush();
 };
 
 // ********** MACROS **********
