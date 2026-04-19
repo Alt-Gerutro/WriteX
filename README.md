@@ -1,6 +1,6 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue"></a>
-  <img src="https://img.shields.io/badge/Project Version-0.1.2-white">
+  <img src="https://img.shields.io/badge/Project Version-0.2.0-white">
 </p>
 
 <p align="center">
