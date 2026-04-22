@@ -177,7 +177,7 @@ TEST_CASE("Format case", "[format]") {
 
 TEST_CASE("Filter case", "[filter]") {
   std::string oldFmt = l.getFormat();
-  short oldFil = l.getFilretInt();
+  short oldFil = l.getFilter();
   l.switchNewLine();
 
   l.setFormat("%L");
