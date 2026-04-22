@@ -6,7 +6,7 @@
 #include <queue>
 #include <string>
 #include <thread>
-#include <stdarg.h>
+#include <ostream>
 
 /**
  * @brief Levels of logging
@@ -181,7 +181,12 @@ public:
    */
   template<typename ...Args>
   std::string format_msg(const std::string& msg, Args&&... args) {
-    return std::vformat(msg, std::make_format_args(std::forward<Args>(args)...));
+    try {
+      return std::vformat(msg, std::make_format_args(std::forward<Args>(args)...));;
+    }
+    catch (std::format_error) {
+      return std::vformat("CANNOT FORMAT STRING: {}", std::make_format_args(msg));
+    }
   }
 
   /**
@@ -199,15 +204,20 @@ public:
    */
   template<typename ...Args>
   void log(const WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line, Args&&... args) {
-    short cur_filter;
-    {
-      std::lock_guard<std::mutex> lock(mtx);
-      cur_filter = filter_level;
+    try {
+      short cur_filter;
+      {
+        std::lock_guard<std::mutex> lock(mtx);
+        cur_filter = filter_level;
+      }
+      if (static_cast<short>(lvl) & cur_filter) {
+        std::string str = format(lvl, format_msg(msg, std::forward<Args>(args)...), file, func, line);
+        enq_msg(str);
+      }
     }
-    if (static_cast<short>(lvl) & cur_filter) {
-      std::string str = format(lvl, format_msg(msg, std::forward<Args>(args)...), file, func, line);
-      enq_msg(str);
-    }
+    catch (const std::format_error) {
+      this->log(WriteX_Level::FATAL, "CANNOT FORMAT MESSAGE: {}", file, func, line, msg);
+    } 
   }
 
   /**
@@ -225,69 +235,69 @@ public:
  * @version 0.1.0
  */
 
-#ifndef LOG_DEBUG
-#define LOG_DEBUG(logger, message, ...) \
+#ifndef WRITEX_LOG_DEBUG
+#define WRITEX_LOG_DEBUG(logger, message, ...) \
 logger.log(WriteX_Level::DEBUG, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #endif // LOG_DEBUG
 
-#ifndef LOG_INFO
-#define LOG_INFO(logger, message, ...) \
+#ifndef WRITEX_LOG_INFO
+#define WRITEX_LOG_INFO(logger, message, ...) \
 logger.log(WriteX_Level::INFO, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #endif // LOG_INFO
 
-#ifndef LOG_WARNING
-#define LOG_WARNING(logger, message, ...) \
+#ifndef WRITEX_LOG_WARNING
+#define WRITEX_LOG_WARNING(logger, message, ...) \
 logger.log(WriteX_Level::WARNING, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#endif // LOG_WARNING
+#endif // WRITEX_LOG_WARNING
 
-#ifndef LOG_ERROR
-#define LOG_ERROR(logger, message, ...) \
+#ifndef WRITEX_LOG_ERROR
+#define WRITEX_LOG_ERROR(logger, message, ...) \
 logger.log(WriteX_Level::ERROR, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#endif // LOG_ERROR
+#endif // WRITEX_LOG_ERROR
 
-#ifndef LOG_FATAL
-#define LOG_FATAL(logger, message, ...) \
+#ifndef WRITEX_LOG_FATAL
+#define WRITEX_LOG_FATAL(logger, message, ...) \
 logger.log(WriteX_Level::FATAL, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#endif // LOG_FATAL
+#endif // WRITEX_LOG_FATAL
 
 /**
  * @note All macros for filtering added in
  * @version 0.1.2
  */
 
-#define ALL_LEVELS static_cast<short> \
+#define WRITEX_ALL_LEVELS static_cast<short> \
   (WriteX_Level::DEBUG | \
   WriteX_Level::INFO | \
   WriteX_Level::WARNING | \
   WriteX_Level::ERROR | \
   WriteX_Level::FATAL)
 
-#define TO_INFO static_cast<short> \
+#define WRITEX_TO_INFO static_cast<short> \
   (WriteX_Level::INFO | \
   WriteX_Level::WARNING | \
   WriteX_Level::ERROR | \
   WriteX_Level::FATAL)
 
-#define TO_WARNING static_cast<short> \
+#define WRITEX_TO_WARNING static_cast<short> \
   (WriteX_Level::WARNING | \
   WriteX_Level::ERROR | \
   WriteX_Level::FATAL)
 
-#define TO_ERROR static_cast<short> \
+#define WRITEX_TO_ERROR static_cast<short> \
   (WriteX_Level::ERROR | \
   WriteX_Level::FATAL)
 
-#define TO_ERROR_ASC static_cast<short> \
+#define WRITEX_TO_ERROR_ASC static_cast<short> \
   (WriteX_Level::DEBUG | \
   WriteX_Level::INFO | \
   WriteX_Level::WARNING | \
   WriteX_Level::ERROR)
 
-#define TO_WARNING_ASC static_cast<short> \
+#define WRITEX_TO_WARNING_ASC static_cast<short> \
   (WriteX_Level::DEBUG | \
   WriteX_Level::INFO | \
   WriteX_Level::WARNING)
 
-#define TO_INFO_ASC static_cast<short> \
+#define WRITEX_TO_INFO_ASC static_cast<short> \
   (WriteX_Level::DEBUG | \
   WriteX_Level::INFO)

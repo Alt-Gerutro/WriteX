@@ -16,13 +16,13 @@ const WriteX_Level operator|(WriteX_Level a, WriteX_Level b) {
 
 WriteX::WriteX(const std::string& name, std::ostream& _ostream) :
 bgthread(&WriteX::loop, this), logger_name(name), ostream(_ostream) {
-  filter_level = ALL_LEVELS;
+  filter_level = WRITEX_ALL_LEVELS;
   fmt = "[%N] [%F %f:%l] [%L] %M";
 }
 
 WriteX::WriteX(const std::string& name, std::ostream& _ostream, const std::string& format) :
 bgthread(&WriteX::loop, this), logger_name(name), ostream(_ostream), fmt(format) {
-  filter_level = ALL_LEVELS;
+  filter_level = WRITEX_ALL_LEVELS;
 }
 
 WriteX::WriteX(const std::string& name, std::ostream& _ostream, short filter) :
@@ -117,9 +117,11 @@ void WriteX::loop() {
       std::string s = std::move(msg_queue.front());
       msg_queue.pop();
 
+      bool cur_add_newline_flag = add_newline;
+
       lock.unlock();
 
-      if (add_newline) {
+      if (cur_add_newline_flag) {
         ostream << s << std::endl;
       } else {
         ostream << s;
@@ -145,7 +147,7 @@ void WriteX::enq_msg(std::string& msg) {
 
 void WriteX::flush() {
   std::unique_lock<std::mutex> lock(mtx);
-  cv.wait(lock, [this] {return msg_queue.empty();});
+  cv.wait(lock, [this] {return msg_queue.empty() | stop_flag;});
 }
 
 void WriteX::switchNewLine() {
