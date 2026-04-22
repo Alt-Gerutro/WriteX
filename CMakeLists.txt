@@ -8,13 +8,25 @@ project(writex LANGUAGES CXX)
 
 # CONFIGURATION
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if(${CMAKE_BUILD_TYPE} STREQUAL "TSan")
+    set(SANITIZER thread)
+elseif(${CMAKE_BUILD_TYPE} STREQUAL "ASan")
+    set(SANITIZER address)
+elseif(${CMAKE_BUILD_TYPE} STREQUAL "LSan")
+    set(SANITIZER leak)
+elseif(${CMAKE_BUILD_TYPE} STREQUAL "MSan")
+    set(SANITIZER memory)
+elseif(${CMAKE_BUILD_TYPE} STREQUAL "USan")
+    set(SANITIZER undefined)
+endif()
+
+if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
 
 # FetchContent part
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
     
     include(FetchContent)
@@ -36,14 +48,19 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include/Wr
 
 # TESTING
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "Release")
     enable_testing()
     add_executable(tests
         tests/test_main.cpp
     )
     target_include_directories(tests PUBLIC ${CMAKE_SOURCE_DIR}/include/WriteX)
     target_link_libraries(tests PRIVATE ${PROJECT_NAME} Catch2::Catch2WithMain)
-    
+
+    if(DEFINED ${SANITIZER} AND NOT ${SANITIZER} STREQUAL "")
+        target_compile_options(tests PRIVATE -fsanitize=${SANITIZER} -g)
+        target_link_options(tests PRIVATE -fsanitize=${SANITIZER})
+    endif()
+
     add_test(
         NAME General
         COMMAND tests
