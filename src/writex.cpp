@@ -92,7 +92,7 @@ void WriteX::setFilter(short filter) {
   filter_level = filter;
 }
 
-short WriteX::getFilretInt() {
+short WriteX::getFilter() {
   std::lock_guard<std::mutex> lock(mtx);
   return filter_level;
 }

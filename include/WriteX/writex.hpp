@@ -134,7 +134,7 @@ public:
    *
    * @version 0.1.2
    */
-  short getFilretInt();
+  short getFilter();
 
   /**
    * @brief Set the format string
