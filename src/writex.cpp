@@ -14,6 +14,43 @@ const WriteX_Level operator|(WriteX_Level a, WriteX_Level b) {
 }
 
 
+void WriteX::enq_msg(std::string& msg) {
+  {
+    std::lock_guard<std::mutex> lock(mtx);
+    msg_queue.push(std::move(msg));
+  }
+
+  cv.notify_one();
+}
+
+void WriteX::loop() {
+  while(true) {
+    std::unique_lock<std::mutex> lock(mtx);
+    cv.wait(lock, [this] { return !msg_queue.empty() || stop_flag; });
+
+    while (!msg_queue.empty()) {
+      std::string s = std::move(msg_queue.front());
+      msg_queue.pop();
+
+      bool cur_add_newline_flag = add_newline;
+
+      lock.unlock();
+
+      if (cur_add_newline_flag) {
+        ostream << s << std::endl;
+      } else {
+        ostream << s;
+      }
+
+      lock.lock();
+    }
+
+    cv.notify_all();
+
+    if (stop_flag && msg_queue.empty()) break;
+  }
+}
+
 WriteX::WriteX(const std::string& name, std::ostream& _ostream) :
 bgthread(&WriteX::loop, this), logger_name(name), ostream(_ostream) {
   filter_level = WRITEX_ALL_LEVELS;
@@ -41,6 +78,32 @@ WriteX::~WriteX() {
   cv.notify_all();
 
   if (bgthread.joinable()) bgthread.join();
+}
+
+std::string WriteX::levelToString(const WriteX_Level& level) const {
+  switch (level) {
+    case WriteX_Level::DEBUG: return "DEBUG";
+    case WriteX_Level::INFO: return "INFO";
+    case WriteX_Level::WARNING: return "WARNING";
+    case WriteX_Level::ERROR: return "ERROR";
+    case WriteX_Level::FATAL: return "FATAL";
+    default: return "UNKNOWN";
+  }
+}
+
+void WriteX::switchNewLine() {
+  std::lock_guard<std::mutex> lock_flag(mtx);
+  add_newline = !add_newline;
+}
+
+void WriteX::setFilter(short filter) {
+  std::lock_guard<std::mutex> lock(mtx);
+  filter_level = filter;
+}
+
+short WriteX::getFilter() {
+  std::lock_guard<std::mutex> lock(mtx);
+  return filter_level;
 }
 
 void WriteX::setFormat(std::string format_string) {
@@ -87,70 +150,7 @@ std::string WriteX::format(WriteX_Level lvl, const std::string& msg, const char*
   return res;
 }
 
-void WriteX::setFilter(short filter) {
-  std::lock_guard<std::mutex> lock(mtx);
-  filter_level = filter;
-}
-
-short WriteX::getFilter() {
-  std::lock_guard<std::mutex> lock(mtx);
-  return filter_level;
-}
-
-std::string WriteX::levelToString(const WriteX_Level& l) const {
-  switch (l) {
-    case WriteX_Level::DEBUG: return "DEBUG";
-    case WriteX_Level::INFO: return "INFO";
-    case WriteX_Level::WARNING: return "WARNING";
-    case WriteX_Level::ERROR: return "ERROR";
-    case WriteX_Level::FATAL: return "FATAL";
-    default: return "UNKNOWN";
-  }
-}
-
-void WriteX::loop() {
-  while(true) {
-    std::unique_lock<std::mutex> lock(mtx);
-    cv.wait(lock, [this] { return !msg_queue.empty() || stop_flag; });
-
-    while (!msg_queue.empty()) {
-      std::string s = std::move(msg_queue.front());
-      msg_queue.pop();
-
-      bool cur_add_newline_flag = add_newline;
-
-      lock.unlock();
-
-      if (cur_add_newline_flag) {
-        ostream << s << std::endl;
-      } else {
-        ostream << s;
-      }
-
-      lock.lock();
-    }
-
-    cv.notify_all();
-
-    if (stop_flag && msg_queue.empty()) break;
-  }
-}
-
-void WriteX::enq_msg(std::string& msg) {
-  {
-    std::lock_guard<std::mutex> lock(mtx);
-    msg_queue.push(std::move(msg));
-  }
-
-  cv.notify_one();
-}
-
 void WriteX::flush() {
   std::unique_lock<std::mutex> lock(mtx);
   cv.wait(lock, [this] {return msg_queue.empty() | stop_flag;});
-}
-
-void WriteX::switchNewLine() {
-  std::lock_guard<std::mutex> lock_flag(mtx);
-  add_newline = !add_newline;
 }

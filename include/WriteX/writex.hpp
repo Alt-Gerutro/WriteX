@@ -10,7 +10,6 @@
 
 /**
  * @brief Levels of logging
- * @version 0.1.0
  */
 enum class WriteX_Level {
   DEBUG = (1 << 0), 
@@ -31,7 +30,6 @@ const WriteX_Level operator|(WriteX_Level a, WriteX_Level b);
 
 /**
  * @brief Class for logging
- * @version 0.2.0
  */
 class WriteX {
 private:
@@ -57,8 +55,6 @@ public:
    * 
    * @param name Name of logger
    * @param _ostream Stream where to write logs
-   *
-   * @version 0.2.0
    */
   explicit WriteX(const std::string& name, std::ostream& _ostream);
 
@@ -68,8 +64,6 @@ public:
    * @param name Name of logger
    * @param _ostream Stream where to write logs
    * @param format Format string. See format documentation.
-   *
-   * @version 0.2.0
    */
   explicit WriteX(const std::string& name, std::ostream& _ostream, const std::string& format);
 
@@ -78,9 +72,7 @@ public:
    * 
    * @param name Name of logger
    * @param _ostream Stream where to write logs
-   * @param filter Filter integer. See iltering documentation
-   *
-   * @version 0.2.0
+   * @param filter Filter integer. See filtering documentation
    */
   explicit WriteX(const std::string& name, std::ostream& _ostream, short filter);
 
@@ -90,9 +82,7 @@ public:
    * @param name Name of logger
    * @param _ostream Stream where to write logs
    * @param format Format string. See format documentation
-   * @param filter Filter integer. See iltering documentation
-   *
-   * @version 0.2.0
+   * @param filter Filter integer. See filtering documentation
    */
   explicit WriteX(const std::string& name, std::ostream& _ostream, const std::string& format, short filter);
   
@@ -103,8 +93,6 @@ public:
    * 
    * @param level Log level
    * @return std::string Stringificated level
-   *
-   * @version 0.1.0
    */
   std::string levelToString(const WriteX_Level& level) const;
 
@@ -113,7 +101,6 @@ public:
    * 
    * @note true -> false, false -> true.
    * @note By default: true
-   * @version 0.2.0
    */
   void switchNewLine();
 
@@ -123,8 +110,6 @@ public:
    * @param filter Integer for filter
    *
    * @note See how to works filter integer in README.md
-   * 
-   * @version 0.1.2
    */
   void setFilter(short filter);
 
@@ -132,8 +117,6 @@ public:
    * @brief Get the filter level integer
    * 
    * @return short filter integer
-   *
-   * @version 0.1.2
    */
   short getFilter();
 
@@ -141,8 +124,6 @@ public:
    * @brief Set the format string
    * 
    * @param format_string Format string
-   * 
-   * @version 0.1.0
    */
   void setFormat(std::string format_string);
 
@@ -150,8 +131,6 @@ public:
    * @brief Get the Format string
    * 
    * @return std::string Format string
-   *
-   * @version 0.1.2
    */
   std::string getFormat();
 
@@ -164,8 +143,6 @@ public:
    * @param func Function where log used
    * @param line Line of code where log used
    * @return std::string Formatted string
-   *
-   * @version 0.1.0
    */
   std::string format(WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line);
 
@@ -176,8 +153,6 @@ public:
    * @param msg Message (and format string)
    * @param args Arguments
    * @return std::string Formatted string
-   *
-   * @version 0.1.0
    */
   template<typename ...Args>
   std::string format_msg(const std::string& msg, Args&&... args) {
@@ -199,8 +174,6 @@ public:
    * @param func Function where log used
    * @param line Line of code where log used
    * @param args Arguments for message
-   *
-   * @version 0.1.0
    */
   template<typename ...Args>
   void log(const WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line, Args&&... args) {
@@ -222,8 +195,6 @@ public:
 
   /**
    * @brief Wait for log output
-   * 
-   * @version 0.2.0
    */
   void flush();
 };
@@ -231,8 +202,7 @@ public:
 // ********** MACROS **********
 
 /**
- * @note All macros for logging added in
- * @version 0.1.0
+ * @note All macros for logging
  */
 
 #ifndef WRITEX_LOG_DEBUG
@@ -261,8 +231,7 @@ logger.log(WriteX_Level::FATAL, message, __FILE__, __FUNCTION__, __LINE__, ##__V
 #endif // WRITEX_LOG_FATAL
 
 /**
- * @note All macros for filtering added in
- * @version 0.1.2
+ * @note All macros for filtering
  */
 
 #define WRITEX_ALL_LEVELS static_cast<short> \
