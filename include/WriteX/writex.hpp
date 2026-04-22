@@ -95,6 +95,7 @@ public:
    * @version 0.2.0
    */
   explicit WriteX(const std::string& name, std::ostream& _ostream, const std::string& format, short filter);
+  
   ~WriteX();
 
   /**
@@ -179,8 +180,8 @@ public:
    * @version 0.1.0
    */
   template<typename ...Args>
-  std::string format_msg(const std::string& msg, Args... args) {
-    return std::vformat(msg, std::make_format_args(args...));
+  std::string format_msg(const std::string& msg, Args&&... args) {
+    return std::vformat(msg, std::make_format_args(std::forward<Args>(args)...));
   }
 
   /**
@@ -197,14 +198,14 @@ public:
    * @version 0.1.0
    */
   template<typename ...Args>
-  void log(const WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line, Args... args) {
+  void log(const WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line, Args&&... args) {
     short cur_filter;
     {
       std::lock_guard<std::mutex> lock(mtx);
       cur_filter = filter_level;
     }
     if (static_cast<short>(lvl) & cur_filter) {
-      std::string str = format(lvl, format_msg(msg, args...), file, func, line);
+      std::string str = format(lvl, format_msg(msg, std::forward<Args>(args)...), file, func, line);
       enq_msg(str);
     }
   }
