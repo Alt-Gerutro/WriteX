@@ -1,9 +1,12 @@
 #include <catch2/catch_test_macros.hpp>
+#include <format>
+#include <unordered_map>
+#include <writex.hpp>
 #include <sstream>
 #include <utility>
 #include <vector>
-#include <writex.hpp>
 #include <string>
+#include <thread>
 
 static std::ostringstream fake_out;
 
@@ -26,6 +29,11 @@ TEST_CASE("Format case", "[format]") {
     }
   };
 
+  SECTION("Format Message specifiers") {
+    CHECK(l.format_msg("Hello {} {}", "World") == "CANNOT FORMAT STRING: Hello {} {}");
+    CHECK(l.format_msg("Hello {}", "World!") == "Hello World!");
+  }
+
   SECTION("All format specifiers") {
     testFormat({
       "%N %L %M %F %f %l %% %0 %o %",
@@ -36,6 +44,18 @@ TEST_CASE("Format case", "[format]") {
         {WriteX_Level::ERROR, "Global ERROR MESSAGE FILE FUNC 1 % %0 %o %"},
         {WriteX_Level::FATAL, "Global FATAL MESSAGE FILE FUNC 1 % %0 %o %"},
         {WriteX_Level(123), "Global UNKNOWN MESSAGE FILE FUNC 1 % %0 %o %"},
+      }
+    });
+
+    testFormat({
+      "%N",
+      {
+        {WriteX_Level::DEBUG, "Global"},
+        {WriteX_Level::INFO, "Global"},
+        {WriteX_Level::WARNING, "Global"},
+        {WriteX_Level::ERROR, "Global"},
+        {WriteX_Level::FATAL, "Global"},
+        {WriteX_Level(123), "Global"},
       }
     });
 
@@ -188,42 +208,42 @@ TEST_CASE("Filter case", "[filter]") {
   };
 
   std::vector<FilterTest> tests = {
-    {TO_INFO, {
+    {WRITEX_TO_INFO, {
     {WriteX_Level::DEBUG, false},
     {WriteX_Level::INFO, true},
     {WriteX_Level::WARNING, true},
     {WriteX_Level::ERROR, true},
     {WriteX_Level::FATAL, true}
     }},
-    {TO_WARNING, {
+    {WRITEX_TO_WARNING, {
     {WriteX_Level::DEBUG, false},
     {WriteX_Level::INFO, false},
     {WriteX_Level::WARNING, true},
     {WriteX_Level::ERROR, true},
     {WriteX_Level::FATAL, true}
     }},
-    {TO_ERROR, {
+    {WRITEX_TO_ERROR, {
     {WriteX_Level::DEBUG, false},
     {WriteX_Level::INFO, false},
     {WriteX_Level::WARNING, false},
     {WriteX_Level::ERROR, true},
     {WriteX_Level::FATAL, true}
     }},
-    {TO_ERROR_ASC, {
+    {WRITEX_TO_ERROR_ASC, {
     {WriteX_Level::DEBUG, true},
     {WriteX_Level::INFO, true},
     {WriteX_Level::WARNING, true},
     {WriteX_Level::ERROR, true},
     {WriteX_Level::FATAL, false}
     }},
-    {TO_WARNING_ASC, {
+    {WRITEX_TO_WARNING_ASC, {
     {WriteX_Level::DEBUG, true},
     {WriteX_Level::INFO, true},
     {WriteX_Level::WARNING, true},
     {WriteX_Level::ERROR, false},
     {WriteX_Level::FATAL, false}
     }},
-    {TO_INFO_ASC, {
+    {WRITEX_TO_INFO_ASC, {
     {WriteX_Level::DEBUG, true},
     {WriteX_Level::INFO, true},
     {WriteX_Level::WARNING, false},
@@ -306,4 +326,75 @@ TEST_CASE("Filter case", "[filter]") {
   l.setFormat(oldFmt);
   l.setFilter(oldFil);
   l.switchNewLine();
+}
+
+const std::string test_threads_msg = "Thread:{}, Message:{}";
+
+void test_log(int thread_num, int messages_count) {
+  for(int i = 0; i < messages_count; i++) {
+    WRITEX_LOG_INFO(l, test_threads_msg, thread_num, i);
+  }
+}
+
+TEST_CASE("Threads case", "[thread]") {
+  std::string oldFmt = l.getFormat();
+  l.setFormat("%M");
+
+  fake_out.str("");
+  REQUIRE(fake_out.str() == "");
+
+  std::vector<std::thread> threads;
+
+  int threads_count = 10;
+  int messages_count = 100;
+
+  for (int i = 0; i < threads_count; i++) {
+    threads.push_back(std::thread {&test_log, i, messages_count});
+  }
+
+  for (int i = 0; i < threads_count; i++) {
+    threads.back().join();
+    threads.pop_back();
+  }
+  l.flush();
+
+  std::vector<std::string> messages;
+
+  {
+    std::string item;
+    std::istringstream iss {fake_out.str()};
+    fake_out.str("");
+    while (std::getline(iss, item, '\n')) {
+      if (!item.empty()) {
+        messages.push_back(item);
+      }
+    }
+  }
+
+  // Actual counts map
+  std::unordered_map<std::string, int> actual_messages_map;
+
+  for (int i = 0; i < messages.size(); i++) {
+    actual_messages_map[messages[i]]++;
+  }
+
+  // Expected counts map
+  std::unordered_map<std::string, int> expected_messages_map;
+
+  for (int i = 0; i < threads_count; i++) {
+    for (int j = 0; j < messages_count; j++) {
+      // std::make_format_args leave dangling references, not critical.
+      std::string key = std::vformat(test_threads_msg, std::make_format_args(i, j));
+      expected_messages_map[key] = 1;
+    }
+  }
+
+  // Checking size of expected and actual maps
+  CHECK(expected_messages_map.size() == actual_messages_map.size());
+  for (const auto& [key, expected_count] : expected_messages_map) {
+    INFO("Key = " << key);
+    CHECK(actual_messages_map[key] == expected_count);
+  }
+
+  l.setFormat(oldFmt);
 }
