@@ -98,7 +98,7 @@ public:
     std::string fmt {"[%N] [%F %f:%l] [%L] %M"};
     short ftr {WRITEX_ALL_LEVELS};
     bool nl {true};
-    std::shared_ptr<std::ostream> output {};
+    std::shared_ptr<std::ostream> output;
 
     public:
       Builder(const std::string name);
