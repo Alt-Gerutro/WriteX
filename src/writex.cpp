@@ -35,7 +35,7 @@ WriteX::Builder& WriteX::Builder::output_stream(const std::shared_ptr<std::ostre
   if (stream != nullptr) {
     output = stream;
   } else {
-    output = std::shared_ptr<std::ostream> (&std::cout, []{});
+    output = std::shared_ptr<std::ostream> (&std::cout, [](std::ostream*) {});
   }
   return *this;
 }
