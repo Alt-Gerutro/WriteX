@@ -56,9 +56,11 @@ if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_include_directories(tests PUBLIC ${CMAKE_SOURCE_DIR}/include/WriteX)
     target_link_libraries(tests PRIVATE ${PROJECT_NAME} Catch2::Catch2WithMain)
 
-    if(NOT DEFINED ${SANITIZER} AND ${SANITIZER} STREQUAL "")
-        target_compile_options(tests PRIVATE -fsanitize=${SANITIZER} -g)
-        target_link_options(tests PRIVATE -fsanitize=${SANITIZER})
+    if(DEFINED ${SANITIZER})
+        if(NOT ${SANITIZER} STREQUAL "")
+            target_compile_options(tests PRIVATE -fsanitize=${SANITIZER} -g)
+            target_link_options(tests PRIVATE -fsanitize=${SANITIZER})
+        endif()
     endif()
 
     add_test(
