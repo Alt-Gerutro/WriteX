@@ -98,19 +98,65 @@ public:
     std::string fmt {"[%N] [%F %f:%l] [%L] %M"};
     short ftr {WRITEX_ALL_LEVELS};
     bool nl {true};
-    std::shared_ptr<std::ostream> output;
+    std::shared_ptr<std::ostream> output = nullptr;
 
     public:
-      Builder(const std::string name);
-      Builder& format(const std::string format);
-      Builder& filter(short format);
-      Builder& newline(bool newline);
-      Builder& output_stream(std::shared_ptr<std::ostream> stream);
+      /**
+       * @brief Construct a new Builder object
+       * 
+       * @param name Name of logger
+       */
+      Builder(const std::string&& name);
+
+      /**
+       * @brief Configure format for logger
+       * 
+       * @param format Format string
+       * @return Builder& builder with configured format string
+       *
+       * @note By default: "[%N] [%F %f:%l] [%L] %M"
+       */
+      Builder& format(const std::string&& format);
+
+      /**
+       * @brief Configure filter for logger
+       * 
+       * @param filter Filter
+       * @return Builder& builder with configured filter
+       *
+       * @note By default: WRITEX_ALL_LEVELS
+       */
+      Builder& filter(const short&& filter);
+
+      /**
+       * @brief Configure newline flag for logger
+       * 
+       * @param newline boolean of flag
+       * @return Builder& builder with configured newline flag
+       *
+       * @note By default: true
+       */
+      Builder& newline(const bool&& newline);
+
+      /**
+       * @brief Configure newline flag for logger
+       * 
+       * @param newline boolean of flag
+       * @return Builder& builder with configured newline flag
+       *
+       * @note By default: true
+       */
+      Builder& output_stream(const std::shared_ptr<std::ostream>& stream);
       
       std::shared_ptr<WriteX> build();
   };
-
+  /**
+   * @brief Construct a new WriteX object by builder
+   * 
+   * @param builder Builder of WriteX class
+   */
   explicit WriteX(Builder& builder);
+
   ~WriteX();
 
   /**

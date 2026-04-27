@@ -14,25 +14,29 @@ const WriteX_Level operator|(WriteX_Level a, WriteX_Level b) {
   return static_cast<WriteX_Level>(static_cast<T>(a) | static_cast<T>(b));
 }
 
-WriteX::Builder::Builder(const std::string name) : nm(name) {}
+WriteX::Builder::Builder(const std::string&& name) : nm(name) {}
 
-WriteX::Builder& WriteX::Builder::format(const std::string format_string) {
+WriteX::Builder& WriteX::Builder::format(const std::string&& format_string) {
   fmt = format_string;
   return *this;
 }
 
-WriteX::Builder& WriteX::Builder::filter(short filter) {
+WriteX::Builder& WriteX::Builder::filter(const short&& filter) {
   ftr = filter;
   return *this;
 }
 
-WriteX::Builder& WriteX::Builder::newline(bool newline) {
+WriteX::Builder& WriteX::Builder::newline(const bool&& newline) {
   nl = newline;
   return *this;
 }
 
-WriteX::Builder& WriteX::Builder::output_stream(std::shared_ptr<std::ostream> stream) {
-  output = stream;
+WriteX::Builder& WriteX::Builder::output_stream(const std::shared_ptr<std::ostream>& stream) {
+  if (stream != nullptr) {
+    output = stream;
+  } else {
+    output = std::shared_ptr<std::ostream> (&std::cout, []{});
+  }
   return *this;
 }
 
