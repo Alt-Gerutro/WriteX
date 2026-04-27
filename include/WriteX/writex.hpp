@@ -1,3 +1,13 @@
+/**
+ * @file writex.hpp
+ * @author Alt-Gerutro (Gerutro) (gerutrogame@gmail.com)
+ * @brief Header file
+ * @version 0.3.0
+ * @date 2026-04-27
+ * 
+ * @copyright Copyright (c) 2026
+ */
+
 #pragma once
 
 #include <condition_variable>
@@ -54,11 +64,11 @@
  * @brief Levels of logging
  */
 enum class WriteX_Level {
-  DEBUG = (1 << 0), 
-  INFO = (1 << 1), 
-  WARNING = (1 << 2), 
-  ERROR = (1 << 3), 
-  FATAL = (1 << 4)
+  DEBUG = (1 << 0), ///< Debug info
+  INFO = (1 << 1), ///< Information about program
+  WARNING = (1 << 2), ///< Warnings, not so critical
+  ERROR = (1 << 3), ///< Errors, program can continue, but not preferably
+  FATAL = (1 << 4) ///< Fatal errors, program can not continue
 };
 
 /**

@@ -1,3 +1,14 @@
+/**
+ * @file writex.cpp
+ * @author Alt-Gerutro (Gerutro) (gerutrogame@gmail.com)
+ * @brief Code file
+ * @version 0.3.0
+ * @date 2026-04-27
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
+
 #include <memory>
 #include <writex.hpp>
 #include <condition_variable>
@@ -85,10 +96,14 @@ WriteX::WriteX(WriteX::Builder& builder) :
   logger_name(builder.nm),
   fmt(builder.fmt),
   filter_level(builder.ftr),
-  add_newline(builder.nl),
-  ostream(std::move(builder.output))
+  add_newline(builder.nl)
 {
   bgthread = std::thread(&WriteX::loop, this);
+  if (builder.output != nullptr) {
+    ostream = builder.output;
+  } else {
+    ostream = std::shared_ptr<std::ostream>(&std::cout, [](auto*){});
+  }
 }
 
 WriteX::~WriteX() {
