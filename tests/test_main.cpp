@@ -1,5 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <format>
+#include <memory>
+#include <ostream>
 #include <unordered_map>
 #include <writex.hpp>
 #include <sstream>
@@ -9,11 +11,15 @@
 #include <thread>
 
 static std::ostringstream fake_out;
+std::ostream& stream = fake_out;
+std::shared_ptr<std::ostream> f(&stream, [](std::ostream*) {});
 
-WriteX l("Global", fake_out);
+auto l = WriteX::Builder("Global")
+.output_stream(f)
+.build();
 
 TEST_CASE("Format case", "[format]") {
-  std::string oldFmt = l.getFormat();
+  std::string oldFmt = l->getFormat();
 
   struct FormatTest {
     std::string format;
@@ -21,17 +27,17 @@ TEST_CASE("Format case", "[format]") {
   };
 
   auto testFormat = [&](const FormatTest& ft) {
-    l.setFormat(ft.format);
-    CHECK(l.getFormat() == ft.format);
+    l->setFormat(ft.format);
+    CHECK(l->getFormat() == ft.format);
     for (const auto& [lvl, ex] : ft.ex) {
-      INFO("Level: " << l.levelToString(lvl));
-      CHECK(l.format(lvl, "MESSAGE", "FILE", "FUNC", 1) == ex);
+      INFO("Level: " << l->levelToString(lvl));
+      CHECK(l->format(lvl, "MESSAGE", "FILE", "FUNC", 1) == ex);
     }
   };
 
   SECTION("Format Message specifiers") {
-    CHECK(l.format_msg("Hello {} {}", "World") == "CANNOT FORMAT STRING: Hello {} {}");
-    CHECK(l.format_msg("Hello {}", "World!") == "Hello World!");
+    CHECK(l->format_msg("Hello {} {}", "World") == "CANNOT FORMAT STRING: Hello {} {}");
+    CHECK(l->format_msg("Hello {}", "World!") == "Hello World!");
   }
 
   SECTION("All format specifiers") {
@@ -192,15 +198,15 @@ TEST_CASE("Format case", "[format]") {
     });
   }
 
-  l.setFormat(oldFmt);
+  l->setFormat(oldFmt);
 }
 
 TEST_CASE("Filter case", "[filter]") {
-  std::string oldFmt = l.getFormat();
-  short oldFil = l.getFilter();
-  l.switchNewLine();
+  std::string oldFmt = l->getFormat();
+  short oldFil = l->getFilter();
+  l->switchNewLine();
 
-  l.setFormat("%L");
+  l->setFormat("%L");
   
   struct FilterTest {
     short filter;
@@ -312,20 +318,20 @@ TEST_CASE("Filter case", "[filter]") {
 
   for (const auto& ft : tests) {
     DYNAMIC_SECTION("Filter = " << ft.filter) {
-      l.setFilter(ft.filter);
+      l->setFilter(ft.filter);
       for (const auto& [lvl, shouldLog] : ft.outcomes) {
         fake_out.str("");
-        l.log(lvl, "MESSAGE", "FILE", "FUNC", 1);
-        l.flush();
-        std::string ex = shouldLog ? (l.levelToString(lvl)) : "";
+        l->log(lvl, "MESSAGE", "FILE", "FUNC", 1);
+        l->flush();
+        std::string ex = shouldLog ? (l->levelToString(lvl)) : "";
         CHECK(fake_out.str() == ex);
       }
     }
   }
   
-  l.setFormat(oldFmt);
-  l.setFilter(oldFil);
-  l.switchNewLine();
+  l->setFormat(oldFmt);
+  l->setFilter(oldFil);
+  l->switchNewLine();
 }
 
 const std::string test_threads_msg = "Thread:{}, Message:{}";
@@ -337,8 +343,8 @@ void test_log(int thread_num, int messages_count) {
 }
 
 TEST_CASE("Threads case", "[thread]") {
-  std::string oldFmt = l.getFormat();
-  l.setFormat("%M");
+  std::string oldFmt = l->getFormat();
+  l->setFormat("%M");
 
   fake_out.str("");
   REQUIRE(fake_out.str() == "");
@@ -356,7 +362,7 @@ TEST_CASE("Threads case", "[thread]") {
     threads.back().join();
     threads.pop_back();
   }
-  l.flush();
+  l->flush();
 
   std::vector<std::string> messages;
 
@@ -396,5 +402,5 @@ TEST_CASE("Threads case", "[thread]") {
     CHECK(actual_messages_map[key] == expected_count);
   }
 
-  l.setFormat(oldFmt);
+  l->setFormat(oldFmt);
 }

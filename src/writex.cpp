@@ -1,3 +1,4 @@
+#include <memory>
 #include <writex.hpp>
 #include <condition_variable>
 #include <iostream>
@@ -13,6 +14,31 @@ const WriteX_Level operator|(WriteX_Level a, WriteX_Level b) {
   return static_cast<WriteX_Level>(static_cast<T>(a) | static_cast<T>(b));
 }
 
+WriteX::Builder::Builder(const std::string name) : nm(name) {}
+
+WriteX::Builder& WriteX::Builder::format(const std::string format_string) {
+  fmt = format_string;
+  return *this;
+}
+
+WriteX::Builder& WriteX::Builder::filter(short filter) {
+  ftr = filter;
+  return *this;
+}
+
+WriteX::Builder& WriteX::Builder::newline(bool newline) {
+  nl = newline;
+  return *this;
+}
+
+WriteX::Builder& WriteX::Builder::output_stream(std::shared_ptr<std::ostream> stream) {
+  output = stream;
+  return *this;
+}
+
+std::shared_ptr<WriteX> WriteX::Builder::build() {
+  return std::make_shared<WriteX>(*this);
+}
 
 void WriteX::enq_msg(std::string& msg) {
   {
@@ -37,9 +63,9 @@ void WriteX::loop() {
       lock.unlock();
 
       if (cur_add_newline_flag) {
-        ostream << s << std::endl;
+        *ostream << s << std::endl;
       } else {
-        ostream << s;
+        *ostream << s;
       }
 
       lock.lock();
@@ -51,24 +77,15 @@ void WriteX::loop() {
   }
 }
 
-WriteX::WriteX(const std::string& name, std::ostream& _ostream) :
-bgthread(&WriteX::loop, this), logger_name(name), ostream(_ostream) {
-  filter_level = WRITEX_ALL_LEVELS;
-  fmt = "[%N] [%F %f:%l] [%L] %M";
+WriteX::WriteX(WriteX::Builder& builder) :
+  logger_name(builder.nm),
+  fmt(builder.fmt),
+  filter_level(builder.ftr),
+  add_newline(builder.nl),
+  ostream(std::move(builder.output))
+{
+  bgthread = std::thread(&WriteX::loop, this);
 }
-
-WriteX::WriteX(const std::string& name, std::ostream& _ostream, const std::string& format) :
-bgthread(&WriteX::loop, this), logger_name(name), ostream(_ostream), fmt(format) {
-  filter_level = WRITEX_ALL_LEVELS;
-}
-
-WriteX::WriteX(const std::string& name, std::ostream& _ostream, short filter) :
-bgthread(&WriteX::loop, this), logger_name(name), ostream(_ostream), filter_level(filter) {
-  fmt = "[%N] [%F %f:%l] [%L] %M";
-}
-
-WriteX::WriteX(const std::string& name, std::ostream& _ostream, const std::string&format, short filter) :
-bgthread(&WriteX::loop, this), logger_name(name), ostream(_ostream), fmt(format), filter_level(filter) {}
 
 WriteX::~WriteX() {
   {

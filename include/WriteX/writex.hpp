@@ -2,11 +2,53 @@
 
 #include <condition_variable>
 #include <format>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <string>
 #include <thread>
 #include <ostream>
+
+/**
+ * @note All macros for filtering
+ */
+
+#define WRITEX_ALL_LEVELS static_cast<short> \
+  (WriteX_Level::DEBUG | \
+  WriteX_Level::INFO | \
+  WriteX_Level::WARNING | \
+  WriteX_Level::ERROR | \
+  WriteX_Level::FATAL)
+
+#define WRITEX_TO_INFO static_cast<short> \
+  (WriteX_Level::INFO | \
+  WriteX_Level::WARNING | \
+  WriteX_Level::ERROR | \
+  WriteX_Level::FATAL)
+
+#define WRITEX_TO_WARNING static_cast<short> \
+  (WriteX_Level::WARNING | \
+  WriteX_Level::ERROR | \
+  WriteX_Level::FATAL)
+
+#define WRITEX_TO_ERROR static_cast<short> \
+  (WriteX_Level::ERROR | \
+  WriteX_Level::FATAL)
+
+#define WRITEX_TO_ERROR_ASC static_cast<short> \
+  (WriteX_Level::DEBUG | \
+  WriteX_Level::INFO | \
+  WriteX_Level::WARNING | \
+  WriteX_Level::ERROR)
+
+#define WRITEX_TO_WARNING_ASC static_cast<short> \
+  (WriteX_Level::DEBUG | \
+  WriteX_Level::INFO | \
+  WriteX_Level::WARNING)
+
+#define WRITEX_TO_INFO_ASC static_cast<short> \
+  (WriteX_Level::DEBUG | \
+  WriteX_Level::INFO)
 
 /**
  * @brief Levels of logging
@@ -38,54 +80,37 @@ private:
   bool stop_flag {false};
 
   std::mutex mtx;
-  std::ostream& ostream;
+  std::shared_ptr<std::ostream> ostream;
   std::queue<std::string> msg_queue;
 
   std::string logger_name;
   std::string fmt;
   short filter_level;
 
-  bool add_newline {true};
+  bool add_newline;
 
   void enq_msg(std::string&);
   void loop();
 public:
-  /**
-   * @brief Construct a new WriteX object
-   * 
-   * @param name Name of logger
-   * @param _ostream Stream where to write logs
-   */
-  explicit WriteX(const std::string& name, std::ostream& _ostream);
+  class Builder {
+    friend WriteX;
+    std::string nm;
+    std::string fmt {"[%N] [%F %f:%l] [%L] %M"};
+    short ftr {WRITEX_ALL_LEVELS};
+    bool nl {true};
+    std::shared_ptr<std::ostream> output {};
 
-  /**
-   * @brief Construct a new WriteX object
-   * 
-   * @param name Name of logger
-   * @param _ostream Stream where to write logs
-   * @param format Format string. See format documentation.
-   */
-  explicit WriteX(const std::string& name, std::ostream& _ostream, const std::string& format);
+    public:
+      Builder(const std::string name);
+      Builder& format(const std::string format);
+      Builder& filter(short format);
+      Builder& newline(bool newline);
+      Builder& output_stream(std::shared_ptr<std::ostream> stream);
+      
+      std::shared_ptr<WriteX> build();
+  };
 
-  /**
-   * @brief Construct a new WriteX object
-   * 
-   * @param name Name of logger
-   * @param _ostream Stream where to write logs
-   * @param filter Filter integer. See filtering documentation
-   */
-  explicit WriteX(const std::string& name, std::ostream& _ostream, short filter);
-
-  /**
-   * @brief Construct a new WriteX object
-   * 
-   * @param name Name of logger
-   * @param _ostream Stream where to write logs
-   * @param format Format string. See format documentation
-   * @param filter Filter integer. See filtering documentation
-   */
-  explicit WriteX(const std::string& name, std::ostream& _ostream, const std::string& format, short filter);
-  
+  explicit WriteX(Builder& builder);
   ~WriteX();
 
   /**
@@ -207,66 +232,25 @@ public:
 
 #ifndef WRITEX_LOG_DEBUG
 #define WRITEX_LOG_DEBUG(logger, message, ...) \
-logger.log(WriteX_Level::DEBUG, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::DEBUG, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #endif // LOG_DEBUG
 
 #ifndef WRITEX_LOG_INFO
 #define WRITEX_LOG_INFO(logger, message, ...) \
-logger.log(WriteX_Level::INFO, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::INFO, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #endif // LOG_INFO
 
 #ifndef WRITEX_LOG_WARNING
 #define WRITEX_LOG_WARNING(logger, message, ...) \
-logger.log(WriteX_Level::WARNING, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::WARNING, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #endif // WRITEX_LOG_WARNING
 
 #ifndef WRITEX_LOG_ERROR
 #define WRITEX_LOG_ERROR(logger, message, ...) \
-logger.log(WriteX_Level::ERROR, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::ERROR, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #endif // WRITEX_LOG_ERROR
 
 #ifndef WRITEX_LOG_FATAL
 #define WRITEX_LOG_FATAL(logger, message, ...) \
-logger.log(WriteX_Level::FATAL, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::FATAL, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #endif // WRITEX_LOG_FATAL
-
-/**
- * @note All macros for filtering
- */
-
-#define WRITEX_ALL_LEVELS static_cast<short> \
-  (WriteX_Level::DEBUG | \
-  WriteX_Level::INFO | \
-  WriteX_Level::WARNING | \
-  WriteX_Level::ERROR | \
-  WriteX_Level::FATAL)
-
-#define WRITEX_TO_INFO static_cast<short> \
-  (WriteX_Level::INFO | \
-  WriteX_Level::WARNING | \
-  WriteX_Level::ERROR | \
-  WriteX_Level::FATAL)
-
-#define WRITEX_TO_WARNING static_cast<short> \
-  (WriteX_Level::WARNING | \
-  WriteX_Level::ERROR | \
-  WriteX_Level::FATAL)
-
-#define WRITEX_TO_ERROR static_cast<short> \
-  (WriteX_Level::ERROR | \
-  WriteX_Level::FATAL)
-
-#define WRITEX_TO_ERROR_ASC static_cast<short> \
-  (WriteX_Level::DEBUG | \
-  WriteX_Level::INFO | \
-  WriteX_Level::WARNING | \
-  WriteX_Level::ERROR)
-
-#define WRITEX_TO_WARNING_ASC static_cast<short> \
-  (WriteX_Level::DEBUG | \
-  WriteX_Level::INFO | \
-  WriteX_Level::WARNING)
-
-#define WRITEX_TO_INFO_ASC static_cast<short> \
-  (WriteX_Level::DEBUG | \
-  WriteX_Level::INFO)
