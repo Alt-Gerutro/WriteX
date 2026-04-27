@@ -1,11 +1,11 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue"></a>
-  <img src="https://img.shields.io/badge/Project Version-0.2.0-white">
+  <img src="https://img.shields.io/badge/Project Version-0.3.0-white">
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Standard-c++20-orange">
-  <img src="https://img.shields.io/badge/Build-CMake_3.10+-orange">
+  <img src="https://img.shields.io/badge/Build-CMake_3.14+-orange">
   <img src="https://img.shields.io/badge/Depencies-none-green">
 </p>
 
