@@ -36,24 +36,32 @@ WriteX - Простой логгер на C++. Поддерживает мног
 #include "writex.hpp"
 
 int main(int argc, char** argv) {
-  WriteX logger("Name", "file.log");
+  auto logger = 
+  WriteX::Builder("Name")
+    .format("[%N] [%F %f:%l] [%L] %M")
+    .filter(WRITEX_ALL_LEVELS)
+    .newline(true)
+    .output_stream(std::shared_ptr<std::ostream> stream)
+    .build()
   LOG_INFO(logger, "Hello");
   LOG_FATAL(logger, "Fatal error");
   return 0;
 }
 ```
 
-У конструктора есть перегрузки:
+Нужно помнить, что shared указатель вызывает стандартную функцию `delete` для объектов, на которые больше не ссылается ни один указатель. Это может привести к падению программы, если передать в него `std::cout`.  
+Для таких случаев можно использовать создание объекта shared указателя с пустым деструктором  
+`std::shared_ptr<std::ostream>(&std::cout, [](auto*){})`
 
 ```cpp
-WriteX logger1("Name", "Format_string", "file.log");
+// ...
 
-WriteX logger2("Name", "Format_string", filterInt, "file.log");
+auto logger = WriteX::Builder("Name")
+  .output_stream(std::shared_ptr<std::ostream>(&std::cout, [](auto*){}))
+  .build()
 
-WriteX logger3("Name", filterInt, "file.log");
+// ...
 ```
-
-`filterInt` в данных примерах это [фильтр](#фильтры).
 
 ## Фильтры
 
