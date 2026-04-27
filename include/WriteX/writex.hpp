@@ -102,6 +102,9 @@ private:
   void enq_msg(std::string&);
   void loop();
 public:
+  /**
+   * @brief Builder for logger
+   */
   class Builder {
     friend WriteX;
     std::string nm;
@@ -149,15 +152,20 @@ public:
       Builder& newline(const bool&& newline);
 
       /**
-       * @brief Configure newline flag for logger
+       * @brief Configure output stream for logger
        * 
-       * @param newline boolean of flag
-       * @return Builder& builder with configured newline flag
+       * @param stream Shared pointer to ostream
+       * @return Builder& builder with configured ostream
        *
-       * @note By default: true
+       * @note By default: &std::cout without delete function
        */
       Builder& output_stream(const std::shared_ptr<std::ostream>& stream);
       
+      /**
+       * @brief Build the configured Builder object
+       * 
+       * @return std::shared_ptr<WriteX> Shared pointer to WriteX object
+       */
       std::shared_ptr<WriteX> build();
   };
   /**
@@ -178,10 +186,7 @@ public:
   std::string levelToString(const WriteX_Level& level) const;
 
   /**
-   * @brief Switching new line flag
-   * 
-   * @note true -> false, false -> true.
-   * @note By default: true
+   * @brief Switching newline flag
    */
   void switchNewLine();
 
@@ -189,8 +194,6 @@ public:
    * @brief Set the Filter of logs
    * 
    * @param filter Integer for filter
-   *
-   * @note See how to works filter integer in README.md
    */
   void setFilter(short filter);
 
