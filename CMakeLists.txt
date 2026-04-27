@@ -46,6 +46,20 @@ add_library(${PROJECT_NAME} SHARED
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include/WriteX)
 
+# EXAMPLES
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Examples")
+    file(GLOB EXAMPLES_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/examples/*.cpp")
+
+    foreach(src_file ${EXAMPLES_SOURCES})
+        get_filename_component(src_name ${src_file} NAME_WE)
+        add_executable(${src_name} ${src_file})
+
+        target_include_directories(${src_name} PUBLIC ${CMAKE_SOURCE_DIR}/include/WriteX)
+        target_link_libraries(${src_name} PRIVATE ${PROJECT_NAME})
+    endforeach()
+endif()
+
 # TESTING
 
 if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "Release")
