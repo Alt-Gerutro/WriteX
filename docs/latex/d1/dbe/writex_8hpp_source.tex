@@ -1,0 +1,183 @@
+\doxysection{writex.\+hpp}
+\hypertarget{writex_8hpp_source}{}\label{writex_8hpp_source}\index{WriteX/include/WriteX/writex.hpp@{WriteX/include/WriteX/writex.hpp}}
+\doxymbox{\hyperlink{writex_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ }
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <condition\_variable>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <format>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <queue>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <ostream>}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#define\ WRITEX\_ALL\_LEVELS\ static\_cast<short>\ \(\backslash\)}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\ \ (WriteX\_Level::DEBUG\ |\ \(\backslash\)}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\ \ WriteX\_Level::INFO\ |\ \(\backslash\)}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\ \ WriteX\_Level::WARNING\ |\ \(\backslash\)}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\ \ WriteX\_Level::ERROR\ |\ \(\backslash\)}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\ \ WriteX\_Level::FATAL)}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#define\ WRITEX\_TO\_INFO\ static\_cast<short>\ \(\backslash\)}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\ \ (WriteX\_Level::INFO\ |\ \(\backslash\)}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\ \ WriteX\_Level::WARNING\ |\ \(\backslash\)}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\ \ WriteX\_Level::ERROR\ |\ \(\backslash\)}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\ \ WriteX\_Level::FATAL)}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#define\ WRITEX\_TO\_WARNING\ static\_cast<short>\ \(\backslash\)}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\ \ (WriteX\_Level::WARNING\ |\ \(\backslash\)}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\ \ WriteX\_Level::ERROR\ |\ \(\backslash\)}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\ \ WriteX\_Level::FATAL)}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#define\ WRITEX\_TO\_ERROR\ static\_cast<short>\ \(\backslash\)}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\ \ (WriteX\_Level::ERROR\ |\ \(\backslash\)}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\ \ WriteX\_Level::FATAL)}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#define\ WRITEX\_TO\_ERROR\_ASC\ static\_cast<short>\ \(\backslash\)}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\ \ (WriteX\_Level::DEBUG\ |\ \(\backslash\)}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\ \ WriteX\_Level::INFO\ |\ \(\backslash\)}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\ \ WriteX\_Level::WARNING\ |\ \(\backslash\)}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\ \ WriteX\_Level::ERROR)}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#define\ WRITEX\_TO\_WARNING\_ASC\ static\_cast<short>\ \(\backslash\)}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\ \ (WriteX\_Level::DEBUG\ |\ \(\backslash\)}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\ \ WriteX\_Level::INFO\ |\ \(\backslash\)}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\ \ WriteX\_Level::WARNING)}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\#define\ WRITEX\_TO\_INFO\_ASC\ static\_cast<short>\ \(\backslash\)}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\ \ (WriteX\_Level::DEBUG\ |\ \(\backslash\)}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\ \ WriteX\_Level::INFO)}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00066\ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18}{WriteX\_Level}}\ \{}
+\DoxyCodeLine{00067\ \ \ \doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18adc30ec20708ef7b0f641ef78b7880a15}{DEBUG}}\ =\ (1\ <<\ 0),\ }
+\DoxyCodeLine{00068\ \ \ \doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18a551b723eafd6a31d444fcb2f5920fbd3}{INFO}}\ =\ (1\ <<\ 1),\ }
+\DoxyCodeLine{00069\ \ \ \doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18a059e9861e0400dfbe05c98a841f3f96b}{WARNING}}\ =\ (1\ <<\ 2),\ }
+\DoxyCodeLine{00070\ \ \ \doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18abb1ca97ec761fc37101737ba0aa2e7c5}{ERROR}}\ =\ (1\ <<\ 3),\ }
+\DoxyCodeLine{00071\ \ \ \doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18a19da7170bea36556dde582519795f3fc}{FATAL}}\ =\ (1\ <<\ 4)\ }
+\DoxyCodeLine{00072\ \};}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00081\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18}{WriteX\_Level}}\ \doxymbox{\hyperlink{writex_8hpp_a08265761bec04bb4c0f479e370c4adc6}{operator|}}(\doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18}{WriteX\_Level}}\ a,\ \doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18}{WriteX\_Level}}\ b);}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00086\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classWriteX_ab60e4c762609691dedf43200d1e2b290}{WriteX}}\ \{}
+\DoxyCodeLine{00087\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00088\ \ \ std::thread\ bgthread;}
+\DoxyCodeLine{00089\ \ \ std::condition\_variable\ cv;}
+\DoxyCodeLine{00090\ \ \ \textcolor{keywordtype}{bool}\ stop\_flag\ \{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ std::mutex\ mtx;}
+\DoxyCodeLine{00093\ \ \ std::shared\_ptr<std::ostream>\ ostream;}
+\DoxyCodeLine{00094\ \ \ std::queue<std::string>\ msg\_queue;}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ std::string\ logger\_name;}
+\DoxyCodeLine{00097\ \ \ std::string\ fmt;}
+\DoxyCodeLine{00098\ \ \ \textcolor{keywordtype}{short}\ filter\_level;}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordtype}{bool}\ add\_newline;}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \textcolor{keywordtype}{void}\ enq\_msg(std::string\&);}
+\DoxyCodeLine{00103\ \ \ \textcolor{keywordtype}{void}\ loop();}
+\DoxyCodeLine{00104\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00108\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classWriteX_1_1Builder_afd97bafee15eb7ed913922f021d97e90}{Builder}}\ \{}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keyword}{friend}\ WriteX;}
+\DoxyCodeLine{00110\ \ \ \ \ std::string\ nm;}
+\DoxyCodeLine{00111\ \ \ \ \ std::string\ fmt\ \{\textcolor{stringliteral}{"{}[\%N]\ [\%F\ \%f:\%l]\ [\%L]\ \%M"{}}\};}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keywordtype}{short}\ ftr\ \{WRITEX\_ALL\_LEVELS\};}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keywordtype}{bool}\ nl\ \{\textcolor{keyword}{true}\};}
+\DoxyCodeLine{00114\ \ \ \ \ std::shared\_ptr<std::ostream>\ output\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \doxymbox{\hyperlink{classWriteX_1_1Builder_afd97bafee15eb7ed913922f021d97e90}{Builder}}(\textcolor{keyword}{const}\ std::string\&\&\ name);}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \doxymbox{\hyperlink{classWriteX_1_1Builder_afd97bafee15eb7ed913922f021d97e90}{Builder}}\&\ \doxymbox{\hyperlink{classWriteX_1_1Builder_ab93e80cf0dce64315d43654e78bbcfea}{format}}(\textcolor{keyword}{const}\ std::string\&\&\ \doxymbox{\hyperlink{classWriteX_1_1Builder_ab93e80cf0dce64315d43654e78bbcfea}{format}});}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \doxymbox{\hyperlink{classWriteX_1_1Builder_afd97bafee15eb7ed913922f021d97e90}{Builder}}\&\ \doxymbox{\hyperlink{classWriteX_1_1Builder_ac951370b919b34f5bb809b9fc77f3314}{filter}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{short}\&\&\ \doxymbox{\hyperlink{classWriteX_1_1Builder_ac951370b919b34f5bb809b9fc77f3314}{filter}});}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \doxymbox{\hyperlink{classWriteX_1_1Builder_afd97bafee15eb7ed913922f021d97e90}{Builder}}\&\ \doxymbox{\hyperlink{classWriteX_1_1Builder_a54a5a1c7735142f86ec8346b512b0002}{newline}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\&\&\ \doxymbox{\hyperlink{classWriteX_1_1Builder_a54a5a1c7735142f86ec8346b512b0002}{newline}});}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \doxymbox{\hyperlink{classWriteX_1_1Builder_afd97bafee15eb7ed913922f021d97e90}{Builder}}\&\ \doxymbox{\hyperlink{classWriteX_1_1Builder_a30beed0e1e6067368646d0a4d6e1e271}{output\_stream}}(\textcolor{keyword}{const}\ std::shared\_ptr<std::ostream>\&\ stream);}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ }
+\DoxyCodeLine{00169\ \ \ \ \ \ \ std::shared\_ptr<WriteX>\ \doxymbox{\hyperlink{classWriteX_1_1Builder_aae0061c77c7113d673cc3412457289f5}{build}}();}
+\DoxyCodeLine{00170\ \ \ \};}
+\DoxyCodeLine{00176\ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classWriteX_ab60e4c762609691dedf43200d1e2b290}{WriteX}}(\doxymbox{\hyperlink{classWriteX_1_1Builder}{Builder}}\&\ builder);}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ \doxymbox{\hyperlink{classWriteX_ab60e4c762609691dedf43200d1e2b290}{\string~WriteX}}();}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00186\ \ \ std::string\ \doxymbox{\hyperlink{classWriteX_a5b655164399eacab1736934027b9eaab}{levelToString}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18}{WriteX\_Level}}\&\ level)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00191\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classWriteX_ae4afd8f04ec2f8ce9f8df55341ab78d0}{switchNewLine}}();}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00198\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classWriteX_ac51da4a2c5b88f4f411237520e14acb7}{setFilter}}(\textcolor{keywordtype}{short}\ filter);}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00205\ \ \ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{classWriteX_a073df05fd86f2afed0fd6eecdae0c573}{getFilter}}();}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00212\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classWriteX_a03767c4e3278f8914baac9500a2bf725}{setFormat}}(std::string\ format\_string);}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00219\ \ \ std::string\ \doxymbox{\hyperlink{classWriteX_afe9bdbb5df45cbca5c805d988c8f0138}{getFormat}}();}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00231\ \ \ std::string\ \doxymbox{\hyperlink{classWriteX_af666691c8f6fdad4822b9f657aace7b1}{format}}(\doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18}{WriteX\_Level}}\ lvl,\ \textcolor{keyword}{const}\ std::string\&\ msg,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ func,\ \textcolor{keywordtype}{int}\ line);}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00241\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ ...Args>}
+\DoxyCodeLine{00242\ \ \ std::string\ \doxymbox{\hyperlink{classWriteX_aa5182a501bf1c2ec96ac504eccade0d9}{format\_msg}}(\textcolor{keyword}{const}\ std::string\&\ msg,\ Args\&\&...\ args)\ \{}
+\DoxyCodeLine{00243\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::vformat(msg,\ std::make\_format\_args(std::forward<Args>(args)...));;}
+\DoxyCodeLine{00245\ \ \ \ \ \}}
+\DoxyCodeLine{00246\ \ \ \ \ \textcolor{keywordflow}{catch}\ (std::format\_error)\ \{}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::vformat(\textcolor{stringliteral}{"{}CANNOT\ FORMAT\ STRING:\ \{\}"{}},\ std::make\_format\_args(msg));}
+\DoxyCodeLine{00248\ \ \ \ \ \}}
+\DoxyCodeLine{00249\ \ \ \}}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00262\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ ...Args>}
+\DoxyCodeLine{00263\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classWriteX_a92dac11eb6168393f9fc409f0f341063}{log}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18}{WriteX\_Level}}\ lvl,\ \textcolor{keyword}{const}\ std::string\&\ msg,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ func,\ \textcolor{keywordtype}{int}\ line,\ Args\&\&...\ args)\ \{}
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \textcolor{keywordtype}{short}\ cur\_filter;}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(mtx);}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ cur\_filter\ =\ filter\_level;}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{short}\textcolor{keyword}{>}(lvl)\ \&\ cur\_filter)\ \{}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ std::string\ str\ =\ \doxymbox{\hyperlink{classWriteX_af666691c8f6fdad4822b9f657aace7b1}{format}}(lvl,\ \doxymbox{\hyperlink{classWriteX_aa5182a501bf1c2ec96ac504eccade0d9}{format\_msg}}(msg,\ std::forward<Args>(args)...),\ file,\ func,\ line);}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ enq\_msg(str);}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00274\ \ \ \ \ \}}
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ std::format\_error)\ \{}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ this-\/>\doxymbox{\hyperlink{classWriteX_a92dac11eb6168393f9fc409f0f341063}{log}}(\doxymbox{\hyperlink{writex_8hpp_ac8e2a9983c7e6b77ded721a8958d3a18a19da7170bea36556dde582519795f3fc}{WriteX\_Level::FATAL}},\ \textcolor{stringliteral}{"{}CANNOT\ FORMAT\ MESSAGE:\ \{\}"{}},\ file,\ func,\ line,\ msg);}
+\DoxyCodeLine{00277\ \ \ \ \ \}\ }
+\DoxyCodeLine{00278\ \ \ \}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00283\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classWriteX_a1a32c7de8398b1e3e28640011b99ad86}{flush}}();}
+\DoxyCodeLine{00284\ \};}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \textcolor{comment}{//\ **********\ MACROS\ **********}}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\#ifndef\ WRITEX\_LOG\_DEBUG}}
+\DoxyCodeLine{00293\ \textcolor{preprocessor}{\#define\ WRITEX\_LOG\_DEBUG(logger,\ message,\ ...)\ \(\backslash\)}}
+\DoxyCodeLine{00294\ \textcolor{preprocessor}{logger-\/>log(WriteX\_Level::DEBUG,\ message,\ \_\_FILE\_\_,\ \_\_FUNCTION\_\_,\ \_\_LINE\_\_,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LOG\_DEBUG}}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\#ifndef\ WRITEX\_LOG\_INFO}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\#define\ WRITEX\_LOG\_INFO(logger,\ message,\ ...)\ \(\backslash\)}}
+\DoxyCodeLine{00299\ \textcolor{preprocessor}{logger-\/>log(WriteX\_Level::INFO,\ message,\ \_\_FILE\_\_,\ \_\_FUNCTION\_\_,\ \_\_LINE\_\_,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00300\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LOG\_INFO}}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ \textcolor{preprocessor}{\#ifndef\ WRITEX\_LOG\_WARNING}}
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\#define\ WRITEX\_LOG\_WARNING(logger,\ message,\ ...)\ \(\backslash\)}}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{logger-\/>log(WriteX\_Level::WARNING,\ message,\ \_\_FILE\_\_,\ \_\_FUNCTION\_\_,\ \_\_LINE\_\_,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ WRITEX\_LOG\_WARNING}}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\#ifndef\ WRITEX\_LOG\_ERROR}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\#define\ WRITEX\_LOG\_ERROR(logger,\ message,\ ...)\ \(\backslash\)}}
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{logger-\/>log(WriteX\_Level::ERROR,\ message,\ \_\_FILE\_\_,\ \_\_FUNCTION\_\_,\ \_\_LINE\_\_,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00310\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ WRITEX\_LOG\_ERROR}}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\#ifndef\ WRITEX\_LOG\_FATAL}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\#define\ WRITEX\_LOG\_FATAL(logger,\ message,\ ...)\ \(\backslash\)}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{logger-\/>log(WriteX\_Level::FATAL,\ message,\ \_\_FILE\_\_,\ \_\_FUNCTION\_\_,\ \_\_LINE\_\_,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ WRITEX\_LOG\_FATAL}}
+
+\end{DoxyCode}
