@@ -342,25 +342,28 @@ void test_log(int thread_num, int messages_count) {
   }
 }
 
-TEST_CASE("Threads case", "[thread]") {
+/**
+ * @brief Function for load testing
+ * 
+ * @param threads_count Threads count
+ * @param messages_count Messages count
+ */
+void test_load(int threads_count, int messages_count) {
   std::string oldFmt = l->getFormat();
   l->setFormat("%M");
 
   fake_out.str("");
   REQUIRE(fake_out.str() == "");
 
-  std::vector<std::thread> threads;
-
-  int threads_count = 10;
-  int messages_count = 100;
+  std::vector<std::thread> thread_vec;
 
   for (int i = 0; i < threads_count; i++) {
-    threads.push_back(std::thread {&test_log, i, messages_count});
+    thread_vec.push_back(std::thread {&test_log, i, messages_count});
   }
 
   for (int i = 0; i < threads_count; i++) {
-    threads.back().join();
-    threads.pop_back();
+    thread_vec.back().join();
+    thread_vec.pop_back();
   }
   l->flush();
 
@@ -403,4 +406,28 @@ TEST_CASE("Threads case", "[thread]") {
   }
 
   l->setFormat(oldFmt);
+}
+
+TEST_CASE("Threads case", "[thread]") {
+  test_load(10, 1000);
+  test_load(30, 10000);
+}
+
+TEST_CASE("Builder case", "[builder]") {
+  auto logger = WriteX::Builder("some name").build();
+  auto logger1 = WriteX::Builder("some name")
+    .format("%F")
+    .build();
+  auto logger2 = WriteX::Builder("some name2")
+    .filter(WRITEX_TO_ERROR)
+    .build();
+  
+  CHECK(logger->getFormat() == "[%N] [%F %f:%l] [%L] %M");
+  CHECK(logger->getFilter() == WRITEX_ALL_LEVELS);
+
+  CHECK(logger1->getFormat() == "%F");
+  CHECK(logger1->getFilter() == WRITEX_ALL_LEVELS);
+
+  CHECK(logger2->getFormat() == "[%N] [%F %f:%l] [%L] %M");
+  CHECK(logger2->getFilter() == WRITEX_TO_ERROR);
 }
