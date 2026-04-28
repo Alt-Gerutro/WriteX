@@ -20,7 +20,8 @@ WriteX - Простой логгер на C++. Поддерживает мног
 
 [установка](#установка)  
 [использование](#использование)  
-[фильтры](#фильтры)
+[фильтры](#фильтры)  
+[документация](#документация)
 
 ---
 
@@ -41,8 +42,8 @@ int main(int argc, char** argv) {
     .format("[%N] [%F %f:%l] [%L] %M")
     .filter(WRITEX_ALL_LEVELS)
     .newline(true)
-    .output_stream(std::shared_ptr<std::ostream> stream)
-    .build()
+    .output_stream(std::shared_ptr<std::ostream>(&std::cout, [](auto*){}))
+    .build();
   LOG_INFO(logger, "Hello");
   LOG_FATAL(logger, "Fatal error");
   return 0;
