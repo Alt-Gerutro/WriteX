@@ -2,20 +2,19 @@
 
 cd "$(dirname "$0")" || exit
 
-./test_run_usan.sh
+./run_test_usan.sh
 echo ""
 
-./test_run_msan.sh
+./run_test_msan.sh
 echo ""
 
-
-./test_run_asan.sh
+./run_test_asan.sh
 echo ""
 
-./test_run_lsan.sh
+./run_test_lsan.sh
 echo ""
 
-./test_run_tsan.sh
+./run_test_tsan.sh
 echo ""
 
 echo "All sanitizers tested"
