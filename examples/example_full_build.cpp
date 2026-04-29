@@ -39,5 +39,8 @@ int main() {
   WRITEX_LOG_ERROR(logger, "Some error: {}", "Error? Where?");
   WRITEX_LOG_FATAL(logger, "Some fatal error: {}", "Hello there");
 
+  WRITEX_LOG_INFO(logger, "Message with some numbers: {}", 2);
+  WRITEX_LOG_INFO(logger, "Message with some numbers: {}", 21414);
+  WRITEX_LOG_INFO(logger, "Message with some numbers and strings: {} = {}", "status", 2);
   return 0;
 }
