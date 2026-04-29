@@ -245,10 +245,10 @@ public:
   template<typename ...Args>
   std::string format_msg(const std::string& msg, Args&&... args) {
     try {
-      return std::vformat(msg, std::make_format_args(std::forward<Args>(args)...));
+      return std::vformat(msg, std::make_format_args(args...));
     }
-    catch (std::format_error) {
-      return std::vformat("CANNOT FORMAT STRING: {}", std::make_format_args(msg));
+    catch (std::format_error&) {
+      return std::format("CANNOT FORMAT STRING: {}", msg);
     }
   }
 
@@ -295,25 +295,25 @@ public:
 
 #ifndef WRITEX_LOG_DEBUG
 #define WRITEX_LOG_DEBUG(logger, message, ...) \
-logger->log(WriteX_Level::DEBUG, message, __FILE__, __func__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::DEBUG, message, __FILE__, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
 #endif // LOG_DEBUG
 
 #ifndef WRITEX_LOG_INFO
 #define WRITEX_LOG_INFO(logger, message, ...) \
-logger->log(WriteX_Level::INFO, message, __FILE__, __func__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::INFO, message, __FILE__, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
 #endif // LOG_INFO
 
 #ifndef WRITEX_LOG_WARNING
 #define WRITEX_LOG_WARNING(logger, message, ...) \
-logger->log(WriteX_Level::WARNING, message, __FILE__, __func__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::WARNING, message, __FILE__, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
 #endif // WRITEX_LOG_WARNING
 
 #ifndef WRITEX_LOG_ERROR
 #define WRITEX_LOG_ERROR(logger, message, ...) \
-logger->log(WriteX_Level::ERROR, message, __FILE__, __func__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::ERROR, message, __FILE__, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
 #endif // WRITEX_LOG_ERROR
 
 #ifndef WRITEX_LOG_FATAL
 #define WRITEX_LOG_FATAL(logger, message, ...) \
-logger->log(WriteX_Level::FATAL, message, __FILE__, __func__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::FATAL, message, __FILE__, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
 #endif // WRITEX_LOG_FATAL
