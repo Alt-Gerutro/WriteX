@@ -1,9 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
-#include <format>
-#include <memory>
+#include <writex.hpp>
 #include <ostream>
 #include <unordered_map>
-#include <writex.hpp>
 #include <sstream>
 #include <utility>
 #include <vector>
@@ -20,6 +18,7 @@ auto l = WriteX::Builder("Global")
 
 TEST_CASE("Format case", "[format]") {
   std::string oldFmt = l->getFormat();
+  l->switchNewLine();
 
   struct FormatTest {
     std::string format;
@@ -196,9 +195,12 @@ TEST_CASE("Format case", "[format]") {
         {WriteX_Level(123), ""},
       }
     });
+
+    
   }
 
   l->setFormat(oldFmt);
+  l->switchNewLine();
 }
 
 TEST_CASE("Filter case", "[filter]") {
@@ -323,7 +325,7 @@ TEST_CASE("Filter case", "[filter]") {
         fake_out.str("");
         l->log(lvl, "MESSAGE", "FILE", "FUNC", 1);
         l->flush();
-        std::string ex = shouldLog ? (l->levelToString(lvl)) : "";
+        std::string_view ex = shouldLog ? (l->levelToString(lvl)) : "";
         CHECK(fake_out.str() == ex);
       }
     }

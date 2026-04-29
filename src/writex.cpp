@@ -9,7 +9,11 @@
  * 
  */
 
-#include <memory>
+#include <array>
+#include <cstring>
+#include <string>
+#include <string_view>
+#include <type_traits>
 #include <writex.hpp>
 #include <condition_variable>
 #include <iostream>
@@ -17,27 +21,20 @@
 #include <ostream>
 #include <queue>
 #include <thread>
-#include <string>
-#include <type_traits>
 
-const WriteX_Level operator|(WriteX_Level a, WriteX_Level b) {
-  using T = std::underlying_type_t<WriteX_Level>;
-  return static_cast<WriteX_Level>(static_cast<T>(a) | static_cast<T>(b));
-}
+WriteX::Builder::Builder(const std::string_view name) : nm(name) {}
 
-WriteX::Builder::Builder(const std::string&& name) : nm(name) {}
-
-WriteX::Builder& WriteX::Builder::format(const std::string&& format_string) {
+WriteX::Builder& WriteX::Builder::format(const std::string_view format_string) {
   fmt = format_string;
   return *this;
 }
 
-WriteX::Builder& WriteX::Builder::filter(const short&& filter) {
+WriteX::Builder& WriteX::Builder::filter(const short filter) {
   ftr = filter;
   return *this;
 }
 
-WriteX::Builder& WriteX::Builder::newline(const bool&& newline) {
+WriteX::Builder& WriteX::Builder::newline(const bool newline) {
   nl = newline;
   return *this;
 }
@@ -55,7 +52,7 @@ std::shared_ptr<WriteX> WriteX::Builder::build() {
   return std::make_shared<WriteX>(*this);
 }
 
-void WriteX::enq_msg(std::string& msg) {
+void WriteX::enq_msg(std::string msg) {
   {
     std::lock_guard<std::mutex> lock(mtx);
     msg_queue.push(std::move(msg));
@@ -73,15 +70,9 @@ void WriteX::loop() {
       std::string s = std::move(msg_queue.front());
       msg_queue.pop();
 
-      bool cur_add_newline_flag = add_newline;
-
       lock.unlock();
 
-      if (cur_add_newline_flag) {
-        *ostream << s << std::endl;
-      } else {
-        *ostream << s;
-      }
+      *ostream << s;
 
       lock.lock();
     }
@@ -98,12 +89,12 @@ WriteX::WriteX(WriteX::Builder& builder) :
   filter_level(builder.ftr),
   add_newline(builder.nl)
 {
-  bgthread = std::thread(&WriteX::loop, this);
   if (builder.output != nullptr) {
     ostream = builder.output;
   } else {
     ostream = std::shared_ptr<std::ostream>(&std::cout, [](auto*){});
   }
+  bgthread = std::thread(&WriteX::loop, this);
 }
 
 WriteX::~WriteX() {
@@ -116,14 +107,16 @@ WriteX::~WriteX() {
   if (bgthread.joinable()) bgthread.join();
 }
 
-std::string WriteX::levelToString(const WriteX_Level& level) const {
+std::string_view WriteX::levelToString(const WriteX_Level& level) {
+  static constexpr std::array<std::string_view, 6> str_arr {"DEBUG", "INFO", "WARNING", "ERROR", "FATAL", "UNKNOWN"};
+
   switch (level) {
-    case WriteX_Level::DEBUG: return "DEBUG";
-    case WriteX_Level::INFO: return "INFO";
-    case WriteX_Level::WARNING: return "WARNING";
-    case WriteX_Level::ERROR: return "ERROR";
-    case WriteX_Level::FATAL: return "FATAL";
-    default: return "UNKNOWN";
+    case WriteX_Level::DEBUG:   return str_arr[0];
+    case WriteX_Level::INFO:    return str_arr[1];
+    case WriteX_Level::WARNING: return str_arr[2];
+    case WriteX_Level::ERROR:   return str_arr[3];
+    case WriteX_Level::FATAL:   return str_arr[4];
+    default:                    return str_arr[5];
   }
 }
 
@@ -132,7 +125,7 @@ void WriteX::switchNewLine() {
   add_newline = !add_newline;
 }
 
-void WriteX::setFilter(short filter) {
+void WriteX::setFilter(std::underlying_type_t<WriteX_Level> filter) {
   std::lock_guard<std::mutex> lock(mtx);
   filter_level = filter;
 }
@@ -154,12 +147,16 @@ std::string WriteX::getFormat() {
 
 std::string WriteX::format(WriteX_Level lvl, const std::string& msg, const char* file, const char* func, int line) {
   std::string cur_fmt;
+  bool cur_add_newline;
   {
     std::lock_guard<std::mutex> lock(mtx);
     cur_fmt = fmt;
+    cur_add_newline = add_newline;
   }
 
   std::string res;
+  res.reserve(256);
+
   for (size_t i = 0; i < cur_fmt.size(); ++i) {
     if (cur_fmt[i] == '%' && i+1 < cur_fmt.size()) {
       char c = cur_fmt[i+1];
@@ -183,10 +180,12 @@ std::string WriteX::format(WriteX_Level lvl, const std::string& msg, const char*
       res += cur_fmt[i];
     }
   }
+  if (cur_add_newline) res += '\n';
+
   return res;
 }
 
 void WriteX::flush() {
   std::unique_lock<std::mutex> lock(mtx);
-  cv.wait(lock, [this] {return msg_queue.empty() | stop_flag;});
+  cv.wait(lock, [this] {return msg_queue.empty() || stop_flag;});
 }

@@ -12,10 +12,9 @@
 
 #include <condition_variable>
 #include <format>
-#include <memory>
 #include <mutex>
 #include <queue>
-#include <string>
+#include <string_view>
 #include <thread>
 #include <ostream>
 
@@ -63,7 +62,7 @@
 /**
  * @brief Levels of logging
  */
-enum class WriteX_Level {
+enum class WriteX_Level : short {
   DEBUG = (1 << 0), ///< Debug info
   INFO = (1 << 1), ///< Information about program
   WARNING = (1 << 2), ///< Warnings, not so critical
@@ -78,10 +77,15 @@ enum class WriteX_Level {
  * @param b Log level right
  * @return WriteX_Level level
  */
-const WriteX_Level operator|(WriteX_Level a, WriteX_Level b);
+inline WriteX_Level operator|(WriteX_Level a, WriteX_Level b) {
+  using T = std::underlying_type_t<WriteX_Level>;
+  return static_cast<WriteX_Level>(static_cast<T>(a) | static_cast<T>(b));
+}
 
 /**
  * @brief Class for logging
+ *
+ * @note Do not define WriteX object in global namespace if You used std::cout for ostream
  */
 class WriteX {
 private:
@@ -99,7 +103,7 @@ private:
 
   bool add_newline;
 
-  void enq_msg(std::string&);
+  void enq_msg(std::string);
   void loop();
 public:
   /**
@@ -119,7 +123,7 @@ public:
        * 
        * @param name Name of logger
        */
-      Builder(const std::string&& name);
+      Builder(const std::string_view name);
 
       /**
        * @brief Configure format for logger
@@ -129,7 +133,7 @@ public:
        *
        * @note By default: "[%N] [%F %f:%l] [%L] %M"
        */
-      Builder& format(const std::string&& format);
+      Builder& format(const std::string_view format);
 
       /**
        * @brief Configure filter for logger
@@ -139,7 +143,7 @@ public:
        *
        * @note By default: WRITEX_ALL_LEVELS
        */
-      Builder& filter(const short&& filter);
+      Builder& filter(const short filter);
 
       /**
        * @brief Configure newline flag for logger
@@ -149,7 +153,7 @@ public:
        *
        * @note By default: true
        */
-      Builder& newline(const bool&& newline);
+      Builder& newline(const bool newline);
 
       /**
        * @brief Configure output stream for logger
@@ -183,7 +187,7 @@ public:
    * @param level Log level
    * @return std::string Stringificated level
    */
-  std::string levelToString(const WriteX_Level& level) const;
+  static std::string_view levelToString(const WriteX_Level& level);
 
   /**
    * @brief Switching newline flag
@@ -195,7 +199,7 @@ public:
    * 
    * @param filter Integer for filter
    */
-  void setFilter(short filter);
+  void setFilter(std::underlying_type_t<WriteX_Level> filter);
 
   /**
    * @brief Get the filter level integer
@@ -241,7 +245,7 @@ public:
   template<typename ...Args>
   std::string format_msg(const std::string& msg, Args&&... args) {
     try {
-      return std::vformat(msg, std::make_format_args(std::forward<Args>(args)...));;
+      return std::vformat(msg, std::make_format_args(std::forward<Args>(args)...));
     }
     catch (std::format_error) {
       return std::vformat("CANNOT FORMAT STRING: {}", std::make_format_args(msg));
@@ -291,25 +295,25 @@ public:
 
 #ifndef WRITEX_LOG_DEBUG
 #define WRITEX_LOG_DEBUG(logger, message, ...) \
-logger->log(WriteX_Level::DEBUG, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::DEBUG, message, __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 #endif // LOG_DEBUG
 
 #ifndef WRITEX_LOG_INFO
 #define WRITEX_LOG_INFO(logger, message, ...) \
-logger->log(WriteX_Level::INFO, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::INFO, message, __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 #endif // LOG_INFO
 
 #ifndef WRITEX_LOG_WARNING
 #define WRITEX_LOG_WARNING(logger, message, ...) \
-logger->log(WriteX_Level::WARNING, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::WARNING, message, __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 #endif // WRITEX_LOG_WARNING
 
 #ifndef WRITEX_LOG_ERROR
 #define WRITEX_LOG_ERROR(logger, message, ...) \
-logger->log(WriteX_Level::ERROR, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::ERROR, message, __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 #endif // WRITEX_LOG_ERROR
 
 #ifndef WRITEX_LOG_FATAL
 #define WRITEX_LOG_FATAL(logger, message, ...) \
-logger->log(WriteX_Level::FATAL, message, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+logger->log(WriteX_Level::FATAL, message, __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 #endif // WRITEX_LOG_FATAL
