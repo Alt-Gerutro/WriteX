@@ -4,7 +4,7 @@ cd "$(dirname "$0")" || exit
 cd .. || exit
 
 echo "***** LSan (leak) *****"
-cmake . -B build -DCMAKE_BUILD_TYPE=LSan
+cmake . -B build -DCMAKE_BUILD_TYPE=LSan -DCMAKE_CXX_COMPILER=clang++
 cmake --build build
 
 cd build
