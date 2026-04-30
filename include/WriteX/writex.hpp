@@ -5,6 +5,10 @@
  * @version 0.3.0
  * @date 2026-04-27
  * 
+ * @example example_simple.cpp
+ * @example example_full.cpp
+ * @example example_multi_logger.cpp
+ *
  * @copyright Copyright (c) 2026
  */
 

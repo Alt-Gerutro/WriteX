@@ -1,11 +1,9 @@
 /**
- * @file example_full_build.cpp
+ * @file example_full.cpp
  * @author Alt-Gerutro (Gerutro) (gerutrogame@gmail.com)
  * @brief Full logger example
  * @version 0.3.0
  * @date 2026-04-27
- * 
- * @copyright Copyright (c) 2026
  */
 
 #include <string>

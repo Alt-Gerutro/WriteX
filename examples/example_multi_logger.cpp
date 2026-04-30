@@ -1,11 +1,9 @@
 /**
- * @file example_full_build.cpp
+ * @file example_multi_logger.cpp
  * @author Alt-Gerutro (Gerutro) (gerutrogame@gmail.com)
  * @brief Multi logger example
  * @version 0.3.0
  * @date 2026-04-28
- * 
- * @copyright Copyright (c) 2026
  */
 
 #include <string>

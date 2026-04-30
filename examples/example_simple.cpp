@@ -4,8 +4,6 @@
  * @brief Simple logger example
  * @version 0.3.0
  * @date 2026-04-27
- * 
- * @copyright Copyright (c) 2026
  */
 
 #include <writex.hpp>
