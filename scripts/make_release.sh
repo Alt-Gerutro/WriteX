@@ -13,6 +13,7 @@ echo "Archive name: $archive_name"
 echo "Archive content: ${archive_files[@]}"
 
 echo "Building project as Release..."
+rm -rf build
 cmake . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --clean-first
 echo "Project was built"
