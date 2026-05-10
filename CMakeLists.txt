@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.14)
 
-set(CMAKE_CXX_COMPILER clang++)
+# OPTIONS
+option(WRITEX_BUILD_EXAMPLES "Build WriteX Examples" OFF)
+option(WRITEX_BUILD_TESTS "Build WriteX Tests" OFF)
+
+# PROJECT
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -20,13 +25,9 @@ elseif(${CMAKE_BUILD_TYPE} STREQUAL "USan")
     set(SANITIZER undefined)
 endif()
 
-if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-endif()
-
 # FetchContent part
 
-if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "Release")
+if(WRITEX_BUILD_TESTS)
     set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
     
     include(FetchContent)
@@ -44,30 +45,30 @@ add_library(${PROJECT_NAME} SHARED
     src/writex.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include/WriteX)
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include/WriteX)
 
 # EXAMPLES
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Examples")
+if(WRITEX_BUILD_EXAMPLES)
     file(GLOB EXAMPLES_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/examples/*.cpp")
 
     foreach(src_file ${EXAMPLES_SOURCES})
         get_filename_component(src_name ${src_file} NAME_WE)
         add_executable(${src_name} ${src_file})
 
-        target_include_directories(${src_name} PUBLIC ${CMAKE_SOURCE_DIR}/include/WriteX)
+        target_include_directories(${src_name} PUBLIC ${PROJECT_SOURCE_DIR}/include/WriteX)
         target_link_libraries(${src_name} PRIVATE ${PROJECT_NAME})
     endforeach()
 endif()
 
 # TESTING
 
-if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "Release")
+if(WRITEX_BUILD_TESTS)
     enable_testing()
     add_executable(tests
         tests/test_main.cpp
     )
-    target_include_directories(tests PUBLIC ${CMAKE_SOURCE_DIR}/include/WriteX)
+    target_include_directories(tests PUBLIC ${PROJECT_SOURCE_DIR}/include/WriteX)
     target_link_libraries(tests PRIVATE ${PROJECT_NAME} Catch2::Catch2WithMain)
 
     if(DEFINED ${SANITIZER})

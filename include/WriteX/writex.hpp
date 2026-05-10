@@ -15,10 +15,10 @@
 #pragma once
 
 #include <condition_variable>
-#include <format>
 #include <mutex>
-#include <queue>
 #include <string_view>
+#include <format>
+#include <queue>
 #include <thread>
 #include <ostream>
 

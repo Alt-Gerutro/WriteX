@@ -9,18 +9,17 @@
  * 
  */
 
-#include <array>
-#include <cstring>
-#include <string>
-#include <string_view>
-#include <type_traits>
-#include <writex.hpp>
+#include "../include/WriteX/writex.hpp"
 #include <condition_variable>
+#include <string_view>
 #include <iostream>
-#include <mutex>
+#include <cstring>
 #include <ostream>
-#include <queue>
+#include <string>
+#include <array>
+#include <mutex>
 #include <thread>
+#include <queue>
 
 WriteX::Builder::Builder(const std::string_view name) : nm(name) {}
 
