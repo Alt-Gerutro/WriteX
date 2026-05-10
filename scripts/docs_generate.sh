@@ -3,7 +3,7 @@
 cd "$(dirname "$0")" || exit
 cd .. || exit
 
-cmake . -B build -DCMAKE_BUILD_TYPE=Release
+cmake . -B build -DCMAKE_BUILD_TYPE=Release -DWRITEX_BUILD_EXAMPLES=ON
 cmake --build build
 
 rm -rf docs/html && doxygen Doxyfile
