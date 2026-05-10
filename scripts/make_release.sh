@@ -19,8 +19,8 @@ cmake --build build --clean-first
 echo "Project was built"
 
 echo "Removing old archives..."
-rm -f *.tar.gz
-rm -f *.zip
+rm -f build/*.tar.gz
+rm -f build/*.zip
 echo "Old archives removed"
 
 echo "Archiving project..."
