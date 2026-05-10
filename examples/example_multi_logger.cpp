@@ -7,7 +7,7 @@
  */
 
 #include <string>
-#include <writex.hpp>
+#include "../include/WriteX/writex.hpp"
 #include <iostream>
 
 int main() {

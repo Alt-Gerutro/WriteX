@@ -6,7 +6,7 @@
  * @date 2026-04-27
  */
 
-#include <writex.hpp>
+#include "../include/WriteX/writex.hpp"
 
 int main() {
   auto logger = WriteX::Builder("Main").build();
