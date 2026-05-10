@@ -4,6 +4,6 @@ cd "$(dirname "$0")" || exit
 cd .. || exit
 
 cmake . -B build -DCMAKE_BUILD_TYPE=Release -DWRITEX_BUILD_EXAMPLES=ON
-cmake --build build
+cmake --build build --clean-first
 
 rm -rf docs/html && doxygen Doxyfile

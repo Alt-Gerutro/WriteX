@@ -4,4 +4,4 @@ cd "$(dirname "$0")" || exit
 cd .. || exit
 
 cmake . -B build -DCMAKE_BUILD_TYPE=Examples -DWRITEX_BUILD_EXAMPLES=ON
-cmake --build build
+cmake --build build --clean-first
